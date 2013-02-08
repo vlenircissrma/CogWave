@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     BlindOFDM/blindofdm_multimediaread.cpp \
     BlindOFDM/blindofdm_framing.cpp \
     BlindOFDM/blindofdm_fec.cpp \
-    BlindOFDM/blindofdm_modem.cpp
+    BlindOFDM/blindofdm_modem.cpp \
+    README.md
 
 
 HEADERS  += mainwindow.h \
