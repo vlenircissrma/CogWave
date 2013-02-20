@@ -19,15 +19,19 @@ sudo apt-get install libitpp-dev libblas-dev liblapack-dev
 
 sudo apt-get install qtcreator
 
-3) Gstreamer
+3) Qwt
+
+sudo apt-get install libqwt5-qt4-dev
+
+4) Gstreamer
 
 sudo apt-get install libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev
 
-4) UHD
+5) UHD
 
 http://code.ettus.com/redmine/ettus/projects/uhd/wiki/UHD_Linux
 
-5) Open CogWave.pro in QtCreator and launch the Application !
+6) Open CogWave.pro in QtCreator and launch the Application !
 
 
 
