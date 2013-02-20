@@ -174,6 +174,9 @@ void BlindOFDM_TDD_Mode_RX::run(){
             //Calculate the spectrum
             spectrum_sensed=sensing->spectrum_block(rx_buff,Nfft);
 
+            //Plot the spectrum
+            emit plotted(spectrum_sensed,1);
+
             //Check UHD errors
             device->rxerrors();
 
@@ -249,32 +252,32 @@ void BlindOFDM_TDD_Mode_RX::run(){
                 start_frame=0;
                 if(Modulation_Order==1){
                     cvec demodulated_ofdm_symbols=blindofdm->equalizer_second_power(rx_buff,detected_group,estimated_channel);
-                    received_bits=blindofdm->demodulate_mask_gray_bpsk(demodulated_ofdm_symbols,detected_group);
+                    received_bits=blindofdm->demodulate_mask_gray_bpsk(demodulated_ofdm_symbols,detected_group,constellation);
                 }
                 if(Modulation_Order==2){
                     cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(rx_buff,detected_group,estimated_channel);
-                    received_bits=blindofdm->demodulate_mask_gray_qpsk(demodulated_ofdm_symbols,detected_group);
+                    received_bits=blindofdm->demodulate_mask_gray_qpsk(demodulated_ofdm_symbols,detected_group,constellation);
                 }
                 if(Modulation_Order==4){
 
                     //Quadrant 16QAM
                     //cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(rx_buff,detected_group,estimated_channel);
-                    //received_bits=blindofdm->demodulate_mask_quadrant_16qam(demodulated_ofdm_symbols,detected_group);
+                    //received_bits=blindofdm->demodulate_mask_quadrant_16qam(demodulated_ofdm_symbols,detected_group,constellation);
                     //Gray 16QAM
                     cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(rx_buff,detected_group,estimated_channel);
-                    received_bits=blindofdm->demodulate_mask_gray_16qam(demodulated_ofdm_symbols,detected_group);
+                    received_bits=blindofdm->demodulate_mask_gray_16qam(demodulated_ofdm_symbols,detected_group,constellation);
                 }
                 if(Modulation_Order==6){
                     //Gray 64QAM
                     cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(rx_buff,detected_group,estimated_channel);
-                    received_bits=blindofdm->demodulate_mask_gray_64qam(demodulated_ofdm_symbols,detected_group);
+                    received_bits=blindofdm->demodulate_mask_gray_64qam(demodulated_ofdm_symbols,detected_group,constellation);
                 }
                 if(Modulation_Order==8){
                     //Gray 256QAM
                     cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(rx_buff,detected_group,estimated_channel);
-                    received_bits=blindofdm->demodulate_mask_gray_256qam(demodulated_ofdm_symbols,detected_group);
+                    received_bits=blindofdm->demodulate_mask_gray_256qam(demodulated_ofdm_symbols,detected_group,constellation);
                 }
-
+                emit plotted(constellation,2);
                 if(Modulation_Order==1){
                     //DBPSK
                     //received_bits2=blindofdm->bpsk_differential_decoding(received_bits);

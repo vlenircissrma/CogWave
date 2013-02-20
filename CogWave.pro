@@ -18,6 +18,7 @@ SOURCES += main.cpp\
     Multimedia/video_tx.cpp \
     Multimedia/text_tx.cpp \
     Multimedia/text_rx.cpp \
+    Multimedia/plot.cpp \
     BlindOFDM/blindofdm_uhddevice.cpp \
     BlindOFDM/blindofdm_tdd_mode_tx.cpp \
     BlindOFDM/blindofdm_tdd_mode_rx.cpp \
@@ -35,6 +36,7 @@ HEADERS  += mainwindow.h \
     Multimedia/video_tx.h \
     Multimedia/text_tx.h \
     Multimedia/text_rx.h \
+    Multimedia/plot.h \
     BlindOFDM/blindofdm_uhddevice.h \
     BlindOFDM/blindofdm_tdd_mode_tx.h \
     BlindOFDM/blindofdm_tdd_mode_rx.h \
@@ -45,6 +47,10 @@ HEADERS  += mainwindow.h \
     BlindOFDM/blindofdm_modem.h 
 
 FORMS    += mainwindow.ui
+
+# Added by V. Le Nir for QWT Plot integration
+INCLUDEPATH += /usr/include/qwt-qt4
+LIBS += -lqwt-qt4
 
 # Added by V. Le Nir for IT++ integration
 LIBS += `/usr/bin/itpp-config --static --libs`

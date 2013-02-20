@@ -53,6 +53,8 @@ signals:
     void valuechanged(bool newvalue);
     void valuechanged(int newvalue);
     void valuechanged(double newvalue);
+    void plotted(vec, int);
+    void plotted(cvec, int);
 
 private:
     Ui_MainWindow *gui;
@@ -83,7 +85,7 @@ private:
     double correction;
     bool is_synchronized;
     int propagation_delay;
-
+    cvec constellation;
 };
 
 #endif // BLINDOFDM_TDD_MODE_RX_H

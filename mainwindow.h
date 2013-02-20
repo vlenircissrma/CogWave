@@ -19,6 +19,7 @@
 #include "Multimedia/audio_rx.h"
 #include "Multimedia/text_tx.h"
 #include "Multimedia/text_rx.h"
+#include "Multimedia/plot.h"
 #include "BlindOFDM/blindofdm_tdd_mode_rx.h"
 #include "BlindOFDM/blindofdm_tdd_mode_tx.h"
 
@@ -37,6 +38,8 @@ public:
 public slots:
     void edit_text(QString line);
     void display(GstElement *video_sink, int window_display);
+    void plotdata(vec ydata, int window);
+    void plotdata(cvec ydata, int window);
 
 private slots:
     void on_pushButton_clicked();
@@ -63,7 +66,7 @@ private:
     //BlindOFDM
     BlindOFDM_TDD_Mode_RX *waveform_rx;
     BlindOFDM_TDD_Mode_TX *waveform_tx;
-
+    Plot *plot;
 
 };
 

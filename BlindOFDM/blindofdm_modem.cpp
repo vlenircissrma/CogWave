@@ -1131,7 +1131,8 @@ cvec BlindOFDM_Modem::equalizer_fourth_power(cvec rx_buff, int best_group, vec &
 
 
 
-bvec BlindOFDM_Modem::demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols, int best_group)
+
+bvec BlindOFDM_Modem::demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1153,12 +1154,17 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols,
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask/8);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,qam.demodulate_bits(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4))));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4)));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }
@@ -1167,7 +1173,7 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols,
 
 }
 
-bvec BlindOFDM_Modem::demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, int best_group)
+bvec BlindOFDM_Modem::demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1189,12 +1195,17 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, 
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask/6);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,qam.demodulate_bits(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4))));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4)));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }
@@ -1203,7 +1214,7 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, 
 
 }
 
-bvec BlindOFDM_Modem::demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, int best_group)
+bvec BlindOFDM_Modem::demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1225,12 +1236,17 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, 
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask/4);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,qam.demodulate_bits(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4))));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4)));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }
@@ -1239,7 +1255,7 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, 
 
 }
 
-bvec BlindOFDM_Modem::demodulate_mask_quadrant_16qam(cvec demodulated_ofdm_symbols, int best_group)
+bvec BlindOFDM_Modem::demodulate_mask_quadrant_16qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1263,20 +1279,26 @@ bvec BlindOFDM_Modem::demodulate_mask_quadrant_16qam(cvec demodulated_ofdm_symbo
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask/4);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,qam.demodulate_bits(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4))));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)*exp(std::complex<double>(0,+pi/4)));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }
+
     return received_bits;
 
 }
 
-bvec BlindOFDM_Modem::demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, int best_group)
+bvec BlindOFDM_Modem::demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1297,12 +1319,17 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, i
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask/2);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,qpsk.demodulate_bits(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j)));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }
@@ -1311,7 +1338,7 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, i
 
 }
 
-bvec BlindOFDM_Modem::demodulate_mask_gray_bpsk(cvec demodulated_ofdm_symbols, int best_group)
+bvec BlindOFDM_Modem::demodulate_mask_gray_bpsk(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation)
 {
 
 
@@ -1332,12 +1359,17 @@ bvec BlindOFDM_Modem::demodulate_mask_gray_bpsk(cvec demodulated_ofdm_symbols, i
     int Number_of_blocks_time_domain=(demodulated_ofdm_symbols.size()/Nfft);
     received_bits.set_size(Number_of_blocks_time_domain*sum_mask);
     received_bits.zeros();
+    constellation.set_size(Number_of_blocks_time_domain*sum_mask);
+    constellation.zeros();
     int index=0;
+    int index2=0;
     for (int i=0;i<Number_of_blocks_time_domain;i++){
         for(int j=0;j<Nfft;j++){
             if(mask[j]>0){
                 received_bits.replace_mid(index,bpsk.demodulate_bits(real(demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j))));
+                constellation.replace_mid(index2,demodulated_ofdm_symbols.get(i*Nfft+j,i*Nfft+j));
                 index=index+mask[j];
+                index2=index2+1;
             }
         }
     }

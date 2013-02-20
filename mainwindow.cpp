@@ -37,8 +37,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(waveform_tx,SIGNAL(valuechanged(bool)),waveform_rx,SLOT(setvalue(bool)),Qt::QueuedConnection);
     connect(waveform_rx,SIGNAL(valuechanged(bool)),waveform_tx,SLOT(setvalue(bool)),Qt::DirectConnection);
     connect(waveform_rx,SIGNAL(valuechanged(int)),waveform_tx,SLOT(setvalue(int)),Qt::QueuedConnection);
-
-
+    plot = new Plot(ui,waveform_rx->blindofdm->Nfft);
+    qRegisterMetaType<vec>("vec");
+    qRegisterMetaType<vec>("cvec");
+    connect(waveform_rx,SIGNAL(plotted(vec,int)),this,SLOT(plotdata(vec,int)),Qt::BlockingQueuedConnection);
+    connect(waveform_rx,SIGNAL(plotted(cvec,int)),this,SLOT(plotdata(cvec,int)),Qt::BlockingQueuedConnection);
 
 
 }
@@ -255,5 +258,15 @@ void MainWindow::display(GstElement *video_sink, int window_display){
         gst_x_overlay_set_xwindow_id(GST_X_OVERLAY(video_sink),win_id);
 
     }
+
+}
+
+void MainWindow::plotdata(vec ydata, int window){
+    plot->Plot_data(ydata,window);
+
+}
+
+void MainWindow::plotdata(cvec ydata, int window){
+    plot->Plot_data(ydata,window);
 
 }

@@ -38,12 +38,12 @@ public:
     cvec modulate_mask_gray_256qam(bvec data_packet, int best_group);
     cvec equalizer_second_power(cvec rx_buff, int best_group, vec &estimated_channel);
     cvec equalizer_fourth_power(cvec rx_buff, int best_group, vec &estimated_channel);
-    bvec demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols, int best_group);
-    bvec demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, int best_group);
-    bvec demodulate_mask_quadrant_16qam(cvec demodulated_ofdm_symbols, int best_group);
-    bvec demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, int best_group);
-    bvec demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, int best_group);
-    bvec demodulate_mask_gray_bpsk(cvec demodulated_ofdm_symbols, int best_group);
+    bvec demodulate_mask_gray_256qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
+    bvec demodulate_mask_gray_64qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
+    bvec demodulate_mask_quadrant_16qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
+    bvec demodulate_mask_gray_16qam(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
+    bvec demodulate_mask_gray_qpsk(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
+    bvec demodulate_mask_gray_bpsk(cvec demodulated_ofdm_symbols, int best_group, cvec &constellation);
     bool preamble_detection_bpsk(bvec received_bits,bvec &received_bits2);
     bool preamble_detection_qpsk(bvec received_bits,bvec &received_bits2);
     bool preamble_detection_gray_16qam(bvec received_bits,bvec &received_bits2);
