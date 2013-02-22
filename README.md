@@ -13,7 +13,7 @@ INSTALLATION (Ubuntu 12.04 LTS)
 
 1) IT++
 
-sudo apt-get install libitpp-dev libblas-dev liblapack-dev
+sudo apt-get install libitpp-dev libblas-dev liblapack-dev libfftw3-dev
 
 2) Qtcreator
 

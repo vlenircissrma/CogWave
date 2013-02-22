@@ -24,7 +24,7 @@ Video_TX::Video_TX(){
     GstCaps *caps;
     pipeline = gst_pipeline_new("pipeline");
     video_src = gst_element_factory_make("v4l2src","video_src");
-    caps=gst_caps_new_simple("video/x-raw-yuv","width",G_TYPE_INT,352,"height",G_TYPE_INT,288,"framerate",GST_TYPE_FRACTION,5,1,NULL);
+    caps=gst_caps_new_simple("video/x-raw-yuv","width",G_TYPE_INT,352,"height",G_TYPE_INT,288,"framerate",GST_TYPE_FRACTION,10,1,NULL);
     video_filter = gst_element_factory_make("ffmpegcolorspace","video_filter");
     video_tee = gst_element_factory_make("tee","video_tee");
     video_queue = gst_element_factory_make("queue","video_queue");

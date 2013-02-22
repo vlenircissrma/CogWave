@@ -149,7 +149,7 @@ void BlindOFDM_TDD_Mode_RX::run(){
 
             if((is_time_set==false)&&(first_tx_timestamp==true)){
 
-                timestamp=double(int(device->time()*100)+2)/100;
+                timestamp=double(int(device->time()*100)+12)/100;
                 rx_buff=device->readsamples(Number_of_received_symbols,timestamp);
 
             }
