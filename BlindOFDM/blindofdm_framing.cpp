@@ -477,7 +477,7 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
 
                         //cout << "SIZE MERGE RECEIVED BITS " << merge_received_bits.size() << endl;
                         //FEC
-                        bvec encoded_bits=fec->decode_packet(merge_received_bits+scrambling);
+                        bvec encoded_bits=fec->decode_packet(merge_received_bits);
                         //cout << "SIZE FEC DECODED BITS " << encoded_bits.size() << endl;
                         //CRC
                         CRC_Code crc(string("CRC-32"));
