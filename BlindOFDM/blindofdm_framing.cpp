@@ -81,8 +81,11 @@ BlindOFDM_Framing::BlindOFDM_Framing(int packet_unit,int nb_packets){
            cout << "The file text_outputpipe already exists"<< endl;
     }
 
-
-
+    scrambler.set_size(packet_size);
+    scrambler.zeros();
+    RNG_reset();
+    RNG_reset(0);
+    scrambler=randb(packet_size);
     fec = new BlindOFDM_FEC();
     file_video = new BlindOFDM_Multimediaread((char*)"video_inputpipe",false);
     file_audio = new BlindOFDM_Multimediaread((char*)"audio_inputpipe",false);
@@ -138,16 +141,7 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
     diff_data_packet.zeros();
 
 
-    for(int i=0;i<packet_size/min_packet_size;i++){
-        //Repeat with the scrambler
-        //data_packet.replace_mid(i*min_packet_size,scrambler);
-        //Random data each time
-        //if((i/3)*3==i)
-        //    data_packet.replace_mid(i*min_packet_size,ones_b(min_packet_size));
-        //else
-            data_packet.replace_mid(i*min_packet_size,randb(min_packet_size));
-    }
-
+    data_packet=randb(packet_size);
     vector<char> information(17);
     information[0]='!';
     information[1]='!';
@@ -377,11 +371,9 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
         merge_transmitted_bits.replace_mid(transmitted_bits_text.size(),transmitted_bits_mp3);
         merge_transmitted_bits.replace_mid(transmitted_bits_text.size()+transmitted_bits_mp3.size(),transmitted_bits_jpeg);
         //cout << " SIZE MERGE TRANSMITTED BITS " << merge_transmitted_bits.size() << endl;
-        RNG_reset(0);
-        bvec scrambling=randb(merge_transmitted_bits.size());
         //CRC
         CRC_Code crc(string("CRC-32"));
-        merge_transmitted_bits = crc.encode(merge_transmitted_bits+scrambling);
+        merge_transmitted_bits = crc.encode(merge_transmitted_bits);
         //cout << " SIZE CRC TRANSMITTED BITS " << merge_transmitted_bits.size() << endl;
         //FEC
         merge_transmitted_bits=fec->encode_packet(merge_transmitted_bits);
@@ -406,10 +398,13 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
 
 
     bvec information_bits=charvec2bvec(information);
-    bvec delimiter_bits=charvec2bvec(delimiter);
+    bvec delimiter_bits=charvec2bvec(delimiter);    
     if((information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()<data_packet.size())&&(merge_transmitted_bits.size()!=0)){
+        bvec scrambling(merge_transmitted_bits.size());
+        scrambling.zeros();
+        scrambling=scrambler.get(0,merge_transmitted_bits.size()-1);
         data_packet.replace_mid(512*2,information_bits);
-        data_packet.replace_mid(512*2+17*8,merge_transmitted_bits);
+        data_packet.replace_mid(512*2+17*8,merge_transmitted_bits+scrambling);
         data_packet.replace_mid(512*2+17*8+merge_transmitted_bits.size(),delimiter_bits);
 
     }
@@ -473,11 +468,13 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
 
 
                         bvec merge_received_bits=charvec2bvec(buff);
-
+                        bvec scrambling(merge_received_bits.size());
+                        scrambling.zeros();
+                        scrambling=scrambler.get(0,merge_received_bits.size()-1);
 
                         //cout << "SIZE MERGE RECEIVED BITS " << merge_received_bits.size() << endl;
                         //FEC
-                        bvec encoded_bits=fec->decode_packet(merge_received_bits);
+                        bvec encoded_bits=fec->decode_packet(merge_received_bits+scrambling);
                         //cout << "SIZE FEC DECODED BITS " << encoded_bits.size() << endl;
                         //CRC
                         CRC_Code crc(string("CRC-32"));
@@ -489,9 +486,7 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
                             cout << "CRC KO" << endl;
                         else{
                             cout << "CRC OK" << endl;
-                            RNG_reset(0);
-                            bvec scrambling=randb(decoded_bits.size());
-                            buff=bvec2charvec(decoded_bits+scrambling);
+                            buff=bvec2charvec(decoded_bits);
 
 
                             //cout << "Number of chars to be written " << buff.size() << endl;

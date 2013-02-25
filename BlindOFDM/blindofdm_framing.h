@@ -43,6 +43,7 @@ private:
 
     int packet_size;
     int min_packet_size;
+    bvec scrambler;
 
 
     BlindOFDM_FEC *fec;
