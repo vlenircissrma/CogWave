@@ -26,17 +26,17 @@ MainWindow::MainWindow(QWidget *parent) :
     audio_rx = new Audio_RX();
     text_tx = new Text_TX();
     text_rx = new Text_RX();
-    connect(text_rx,SIGNAL(edited_text(QString)),this,SLOT(edit_text(QString)),Qt::QueuedConnection);
-    connect(video_tx,SIGNAL(displayed(GstElement*,int)),this,SLOT(display(GstElement*,int)),Qt::QueuedConnection);
-    connect(video_rx,SIGNAL(displayed(GstElement*,int)),this,SLOT(display(GstElement*,int)),Qt::QueuedConnection);
+    connect(text_rx,SIGNAL(edited_text(QString)),this,SLOT(edit_text(QString)),Qt::BlockingQueuedConnection);
+    connect(video_tx,SIGNAL(displayed(GstElement*,int)),this,SLOT(display(GstElement*,int)),Qt::BlockingQueuedConnection);
+    connect(video_rx,SIGNAL(displayed(GstElement*,int)),this,SLOT(display(GstElement*,int)),Qt::BlockingQueuedConnection);
 
 
     //BlindOFDM
     waveform_tx = new BlindOFDM_TDD_Mode_TX(ui);
     waveform_rx = new BlindOFDM_TDD_Mode_RX(ui);
-    connect(waveform_tx,SIGNAL(valuechanged(bool)),waveform_rx,SLOT(setvalue(bool)),Qt::QueuedConnection);
-    connect(waveform_rx,SIGNAL(valuechanged(bool)),waveform_tx,SLOT(setvalue(bool)),Qt::DirectConnection);
-    connect(waveform_rx,SIGNAL(valuechanged(int)),waveform_tx,SLOT(setvalue(int)),Qt::QueuedConnection);
+    connect(waveform_tx,SIGNAL(valuechanged(bool)),waveform_rx,SLOT(setvalue(bool)),Qt::BlockingQueuedConnection);
+    connect(waveform_rx,SIGNAL(valuechanged(bool)),waveform_tx,SLOT(setvalue(bool)),Qt::BlockingQueuedConnection);
+    connect(waveform_rx,SIGNAL(valuechanged(int)),waveform_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
     plot = new Plot(ui,waveform_rx->blindofdm->Nfft);
     qRegisterMetaType<vec>("vec");
     qRegisterMetaType<vec>("cvec");

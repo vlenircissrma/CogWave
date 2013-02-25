@@ -61,7 +61,7 @@ BlindOFDM_TDD_Mode_TX::BlindOFDM_TDD_Mode_TX(Ui_MainWindow *ui)
     is_time_set=false;
     tx_best_group=0;
 
-    connect(this,SIGNAL(updated_uhd()),this,SLOT(update_uhd()),Qt::QueuedConnection);
+    connect(this,SIGNAL(updated_uhd()),this,SLOT(update_uhd()),Qt::BlockingQueuedConnection);
 
 
 

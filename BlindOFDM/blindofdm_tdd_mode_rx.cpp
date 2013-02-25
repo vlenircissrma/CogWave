@@ -63,8 +63,8 @@ BlindOFDM_TDD_Mode_RX::BlindOFDM_TDD_Mode_RX(Ui_MainWindow *ui)
     is_synchronized=false;
 
 
-    connect(this,SIGNAL(updated_uhd()),this,SLOT(update_uhd()),Qt::QueuedConnection);
-    connect(this,SIGNAL(valuechanged(double)),device,SLOT(setvalue(double)),Qt::QueuedConnection);
+    connect(this,SIGNAL(updated_uhd()),this,SLOT(update_uhd()),Qt::BlockingQueuedConnection);
+    connect(this,SIGNAL(valuechanged(double)),device,SLOT(setvalue(double)),Qt::BlockingQueuedConnection);
 
 }
 
