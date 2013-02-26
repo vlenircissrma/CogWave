@@ -40,6 +40,7 @@ private:
     GstElement *video_queue;
     GstElement *video_filter;
     GstElement *video_rate;
+    GstElement *video_scale;
     GstElement *video_sink;
     GstElement *file_queue;
     GstElement *video_encoder;

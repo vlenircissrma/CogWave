@@ -24,7 +24,9 @@ Video_TX::Video_TX(){
     GstCaps *caps;
     pipeline = gst_pipeline_new("pipeline");
     video_src = gst_element_factory_make("v4l2src","video_src");
-    caps=gst_caps_new_simple("video/x-raw-yuv","width",G_TYPE_INT,352,"height",G_TYPE_INT,288,"framerate",GST_TYPE_FRACTION,10,1,NULL);
+    video_scale = gst_element_factory_make ("videoscale", "video_scale");
+    video_rate = gst_element_factory_make ("videorate", "video_rate");
+    caps=gst_caps_new_simple("video/x-raw-yuv","width",G_TYPE_INT,352,"height",G_TYPE_INT,288,"framerate",GST_TYPE_FRACTION,5,1,NULL);
     video_filter = gst_element_factory_make("ffmpegcolorspace","video_filter");
     video_tee = gst_element_factory_make("tee","video_tee");
     video_queue = gst_element_factory_make("queue","video_queue");
@@ -35,8 +37,9 @@ Video_TX::Video_TX(){
     file_sink = gst_element_factory_make("filesink","file_sink");
     g_object_set(G_OBJECT(file_sink),"location","video_inputpipe",NULL);
     g_object_set(G_OBJECT(file_sink),"buffer-mode",1,NULL);
-    gst_bin_add_many(GST_BIN(pipeline),video_src,video_filter,video_tee,video_queue,video_sink,file_queue,video_encoder,file_sink,NULL);
-    gst_element_link_filtered(video_src,video_filter,caps);
+    gst_bin_add_many(GST_BIN(pipeline),video_src,video_scale,video_rate,video_filter,video_tee,video_queue,video_sink,file_queue,video_encoder,file_sink,NULL);
+    gst_element_link_many(video_src,video_scale,video_rate,NULL);
+    gst_element_link_filtered(video_rate,video_filter,caps);
     gst_element_link(video_filter,video_tee);
     gst_element_link_many(video_tee,video_queue,video_sink,NULL);
     gst_element_link_many(video_tee,file_queue,video_encoder,file_sink,NULL);
