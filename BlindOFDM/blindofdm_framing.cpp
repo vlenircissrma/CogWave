@@ -83,8 +83,7 @@ BlindOFDM_Framing::BlindOFDM_Framing(int packet_unit,int nb_packets){
 
     scrambler.set_size(packet_size);
     scrambler.zeros();
-    RNG_reset();
-    RNG_reset(0);
+    RNG_reset(4357U);
     scrambler=randb(packet_size);
     fec = new BlindOFDM_FEC();
     file_video = new BlindOFDM_Multimediaread((char*)"video_inputpipe",false);
