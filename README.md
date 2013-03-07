@@ -27,7 +27,7 @@ sudo apt-get install libqwt5-qt4-dev
 
 4) Gstreamer
 
-sudo apt-get install libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev
+sudo apt-get install libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev gstreamer0.10-plugins-ugly
 
 5) UHD
 
