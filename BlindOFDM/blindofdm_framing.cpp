@@ -398,7 +398,7 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
 
     bvec information_bits=charvec2bvec(information);
     bvec delimiter_bits=charvec2bvec(delimiter);    
-    if((information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()<data_packet.size())&&(merge_transmitted_bits.size()!=0)){
+    if((512*2+information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()<data_packet.size())&&(merge_transmitted_bits.size()!=0)){
         bvec scrambling(merge_transmitted_bits.size());
         scrambling.zeros();
         scrambling=scrambler.get(0,merge_transmitted_bits.size()-1);

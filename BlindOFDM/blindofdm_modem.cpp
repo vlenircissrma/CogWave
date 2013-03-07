@@ -16,7 +16,7 @@ BlindOFDM_Modem::BlindOFDM_Modem()
 {
     Nfft=512;
     Ncp=128;
-    num_subchannels=2;
+    num_subchannels=4;
     Number_of_OFDM_symbols=160;
     Modulation_Order=2;
     time_offset_estimate=0;
