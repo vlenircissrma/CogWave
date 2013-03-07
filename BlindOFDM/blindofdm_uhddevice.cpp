@@ -73,7 +73,9 @@ void BlindOFDM_UHDDevice::init()
     cout << "Setting TX Rate " << usrp->get_tx_rate() << endl;
     tx_rate=usrp->get_tx_rate();
 
-    usrp->set_tx_freq(tx_freq);
+    //usrp->set_tx_freq(tx_freq);
+    uhd::tune_request_t tune_req(tx_freq,tx_rate);
+    usrp->set_tx_freq(tune_req);
     cout << "Setting TX Freq " << usrp->get_tx_freq()<< endl;
     tx_freq=usrp->get_tx_freq();
 
