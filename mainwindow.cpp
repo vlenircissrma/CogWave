@@ -57,6 +57,7 @@ MainWindow::~MainWindow()
     delete text_rx;
     delete waveform_tx;
     delete waveform_rx;
+    delete plot;
 
 }
 
