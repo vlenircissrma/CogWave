@@ -365,10 +365,10 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
     }
     bvec merge_transmitted_bits;
     if(((soi!=-1)&&(eoi!=-1))||((sot!=-1)&&(eot!=-1))||((som!=-1)&&(eom!=-1))){
-        merge_transmitted_bits.set_size(transmitted_bits_text.size()+transmitted_bits_mp3.size()+transmitted_bits_jpeg.size());
+        merge_transmitted_bits.set_size(transmitted_bits_text.size()+transmitted_bits_jpeg.size()+transmitted_bits_mp3.size());
         merge_transmitted_bits.replace_mid(0,transmitted_bits_text);
-        merge_transmitted_bits.replace_mid(transmitted_bits_text.size(),transmitted_bits_mp3);
-        merge_transmitted_bits.replace_mid(transmitted_bits_text.size()+transmitted_bits_mp3.size(),transmitted_bits_jpeg);
+        merge_transmitted_bits.replace_mid(transmitted_bits_text.size(),transmitted_bits_jpeg);
+        merge_transmitted_bits.replace_mid(transmitted_bits_text.size()+transmitted_bits_jpeg.size(),transmitted_bits_mp3);
         //cout << " SIZE MERGE TRANSMITTED BITS " << merge_transmitted_bits.size() << endl;
         //CRC
         CRC_Code crc(string("CRC-32"));
@@ -517,8 +517,12 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
 
                             }
 
-                            k=0;
-                            l=0;
+                            if((soi!=-1)&&(eoi!=-1)){
+                                k=l;
+                            }
+                            else{
+                                k=0;
+                            }
                             int som=-1;
                             int eom=-1;
                             while((som==-1)&&(eom==-1)&&(k<buff.size())){
