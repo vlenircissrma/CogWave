@@ -207,9 +207,15 @@ void BlindOFDM_TDD_Mode_TX::run(){
                 if(Modulation_Order==2){
                     tx_buff=blindofdm->modulate_mask_qpsk(data_packet2,tx_best_group);
                     /*vec estimated_channel;
-                    blindofdm->demodulate_mask_qpsk_tracking(tx_buff,tx_best_group,data_packet,estimated_channel,constellation);
-                    cout << sum(to_ivec(data_packet+data_packet2.get(0,data_packet.size()-1))) << endl;
-                    emit plotted(constellation,7);*/
+                    cvec constellation;
+                    cvec demodulated_ofdm_symbols=blindofdm->equalizer_fourth_power(tx_buff,tx_best_group,estimated_channel);
+                    bvec received_bits=blindofdm->demodulate_mask_gray_qpsk(demodulated_ofdm_symbols,tx_best_group,constellation);
+                    cout << sum(to_ivec(received_bits+data_packet2.get(0,received_bits.size()-1))) << endl;
+                    int src_adress;
+                    int start_frame=128;
+                    double sync_time=0.0;
+                    bool packet_ok=packets->decode_frame(received_bits,myaddress,src_adress,tx_best_group,start_frame,sync_time,num_subchannels);*/
+
                 }
                 if(Modulation_Order==4){
                     //Quadrant 16QAM

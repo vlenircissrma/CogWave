@@ -51,6 +51,8 @@ FORMS    += mainwindow.ui
 # Added by V. Le Nir for QWT Plot integration
 INCLUDEPATH += /usr/include/qwt-qt4
 LIBS += -lqwt-qt4
+#INCLUDEPATH += /usr/include/qwt
+#LIBS += -lqwt
 
 # Added by V. Le Nir for IT++ integration
 LIBS += `/usr/bin/itpp-config --static --libs`

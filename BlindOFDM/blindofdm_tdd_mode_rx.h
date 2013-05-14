@@ -71,8 +71,6 @@ private:
     bool first_tx_timestamp;
     bvec data_packet;
     int tx_best_group;
-    int previous_tx_best_group;
-    int rx_best_group;
     bool is_time_set;
     double timestamp;
     cvec rx_buff;
