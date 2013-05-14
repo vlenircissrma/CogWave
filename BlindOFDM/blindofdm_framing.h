@@ -28,7 +28,7 @@ class BlindOFDM_Framing
 public:
     BlindOFDM_Framing(int packet_unit,int nb_packets);
     bvec encode_frame(int my_adress,int dest_adress,int best_group, double time, int &nb_read);
-    bool decode_frame(bvec received_bits, int my_adress,int &src_adress,int &best_group,int &start_frame, double &time, int num_subchannels);
+    bool decode_frame(bvec received_bits, int my_adress,int &src_adress,int &best_group,int &start_frame, double &time, int num_subchannels, bool &crc_ok);
     bvec charvec2bvec(vector<char> input);
     vector<char> bvec2charvec(bvec input);
     void file_close();

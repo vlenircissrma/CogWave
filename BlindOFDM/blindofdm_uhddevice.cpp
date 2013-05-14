@@ -22,7 +22,7 @@ BlindOFDM_UHDDevice::BlindOFDM_UHDDevice()
     timeout=1.0;
     tx_rate=2.0e6;
     tx_freq=433.92e6;
-    tx_gain=usrp->get_tx_gain_range().stop()/2;
+    tx_gain=usrp->get_tx_gain_range().stop();
     tx_amplitude=0.1;
     rx_rate=2.0e6;
     rx_freq=433.92e6;

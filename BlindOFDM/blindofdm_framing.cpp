@@ -422,10 +422,11 @@ bvec BlindOFDM_Framing::encode_frame(int my_adress,int dest_adress,int best_grou
 }
 
 
-bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_adress,int &best_group, int &start_frame, double &sync_time, int num_subchannels)
+bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_adress,int &best_group, int &start_frame, double &sync_time, int num_subchannels, bool &crc_ok)
 {
     bool packet_ok=false;
     bool end_delimiter=false;
+    crc_ok=false;
 
 
     vector<char> information=bvec2charvec(received_bits);
@@ -485,6 +486,7 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
                             cout << "CRC KO" << endl;
                         else{
                             cout << "CRC OK" << endl;
+                            crc_ok=true;
                             buff=bvec2charvec(decoded_bits);
 
 

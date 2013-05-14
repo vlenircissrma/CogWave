@@ -306,12 +306,15 @@ void BlindOFDM_TDD_Mode_RX::run(){
                     //256AM
                     bool preamble_ok=blindofdm->preamble_detection_gray_256qam(received_bits,received_bits2);
                 }
-                packet_ok=packets->decode_frame(received_bits2,myaddress,src_adress,tx_best_group,start_frame,sync_time,num_subchannels);
+                bool crc_ok;
+                packet_ok=packets->decode_frame(received_bits2,myaddress,src_adress,tx_best_group,start_frame,sync_time,num_subchannels,crc_ok);
 
                 if((packet_ok==true)&&(tx_best_group>=0)&&(tx_best_group<num_subchannels)){
 
+                    if(crc_ok==true){
                     //Transfer the best group to TX
                     emit valuechanged(tx_best_group);
+                    }
 
                     //cout << "TIME " << sync_time << endl;
                     //cout << "START FRAME " << start_frame << endl;
