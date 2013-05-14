@@ -10,7 +10,7 @@ For more information, visit our website http://www.sic.rma.ac.be/~vlenir/CogWave
 
 To download the code, go to GitHub https://github.com/vlenircissrma/CogWave
 
-To see CogWave in action, follow this link http://www.youtube.com/watch?v=s2TQcjxNOmM
+To see CogWave in action, follow this link http://www.youtube.com/watch?v=mETzIbV3Edg
 
 
 To get help and to report bugs, post your message to the google group https://groups.google.com/forum/#!forum/cogwave or send an email to the diffusion list cogwave@googlegroups.com
