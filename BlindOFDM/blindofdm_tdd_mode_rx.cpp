@@ -181,7 +181,7 @@ void BlindOFDM_TDD_Mode_RX::run(){
             device->rxerrors();
 
             //Compute the best group of subcarriers
-            tx_best_group=sensing->best_group_mask(spectrum_sensed,num_subchannels);
+            rx_best_group=sensing->best_group_mask(spectrum_sensed,num_subchannels);
 
             //Detect if there is a OFDM signal in the received samples
             //The following line determine if there is an OFDM signal using the whole bandwidth
@@ -307,13 +307,20 @@ void BlindOFDM_TDD_Mode_RX::run(){
                     bool preamble_ok=blindofdm->preamble_detection_gray_256qam(received_bits,received_bits2);
                 }
                 bool crc_ok;
+                previous_tx_best_group=tx_best_group;
                 packet_ok=packets->decode_frame(received_bits2,myaddress,src_adress,tx_best_group,start_frame,sync_time,num_subchannels,crc_ok);
 
                 if((packet_ok==true)&&(tx_best_group>=0)&&(tx_best_group<num_subchannels)){
 
+                    if(previous_tx_best_group!=tx_best_group){
                     if(crc_ok==true){
                     //Transfer the best group to TX
-                    emit valuechanged(tx_best_group);
+                        emit valuechanged(tx_best_group);
+                    }
+                    else{
+                          //Transfer the best group to TX
+                        emit valuechanged(tx_best_group);
+                    }
                     }
 
                     //cout << "TIME " << sync_time << endl;
@@ -352,7 +359,7 @@ void BlindOFDM_TDD_Mode_RX::run(){
             }
             else{
                 //Transfer the best group to TX
-                emit valuechanged(tx_best_group);
+                emit valuechanged(rx_best_group);
             }
 
         qApp->processEvents();
