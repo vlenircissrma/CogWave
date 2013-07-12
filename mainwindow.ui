@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
+    <width>791</width>
     <height>616</height>
    </rect>
   </property>
@@ -343,14 +343,34 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>140</y>
+      <width>121</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>BlindOFDMA</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>DADS</string>
+     </property>
+    </item>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>679</width>
-     <height>29</height>
+     <width>791</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -370,6 +390,7 @@
    <class>QwtPlot</class>
    <extends>QFrame</extends>
    <header>qwt_plot.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

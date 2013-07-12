@@ -18,8 +18,9 @@
 #include "blindofdm_uhddevice.h"
 #include "blindofdm_framing.h"
 #include "blindofdm_sensing.h"
+#include "waveform_rx.h"
 
-class BlindOFDM_TDD_Mode_RX: public QThread
+class BlindOFDM_TDD_Mode_RX: public Waveform_RX
 {
 Q_OBJECT
 public:

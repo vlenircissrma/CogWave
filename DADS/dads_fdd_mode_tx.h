@@ -10,50 +10,38 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef BLINDOFDM_TDD_MODE_TX_H
-#define BLINDOFDM_TDD_MODE_TX_H
+#ifndef DADS_FDD_MODE_TX_H
+#define DADS_FDD_MODE_TX_H
 #include <QThread>
 #include "ui_mainwindow.h"
-#include "blindofdm_modem.h"
-#include "blindofdm_uhddevice.h"
-#include "blindofdm_framing.h"
+#include "dads_modem.h"
+#include "dads_uhddevice.h"
+#include "dads_framing.h"
 #include "waveform_tx.h"
 
-class BlindOFDM_TDD_Mode_TX: public Waveform_TX
+class DADS_FDD_Mode_TX: public Waveform_TX
 {
 Q_OBJECT
 public:
-    BlindOFDM_TDD_Mode_TX(Ui_MainWindow *ui);
-    void init();
-    BlindOFDM_Modem *blindofdm;
-    BlindOFDM_UHDDevice *device;
-    BlindOFDM_Framing *packets;
+    DADS_FDD_Mode_TX(Ui_MainWindow *ui);
+    DADS_Modem *dads;
+    DADS_UHDDevice *device;
+    DADS_Framing *packets;
     bool stop_signal;
     bool noderunning;
-    int Nfft;
-    int Ncp;
-    int num_subchannels;
-    int Number_of_OFDM_symbols;
-    int number_of_slots;
-    double time_gap;
+    int nb_bits;
     QString state;
     int myaddress;
     int destaddress;
 
+public slots:
+    void update_uhd();
+signals:
+    void updated_uhd();
+
 
 protected:
     void run();
-
-
-public slots:
-    void update_uhd();
-    void setvalue(bool value);
-    void setvalue(int value);
-signals:
-    void updated_uhd();
-    void valuechanged(bool newvalue);
-
-
 
 private:
     Ui_MainWindow *gui;
@@ -64,19 +52,12 @@ private:
     double rxrate;
     double rxfreq;
     double rxgain;
-    int sum_mask;
-    int Number_of_received_symbols;
-    int Modulation_Order;
-    bool first_tx_timestamp;
     bvec data_packet;
-    bvec data_packet2;
-    int tx_best_group;
-    int nb_read;
     cvec tx_buff;
-    double tx_timestamp;
     QString number;
-    bool is_time_set;
+    int nb_read;
+
+
 };
 
-#endif // BLINDOFDM_TDD_MODE_TX_H
-
+#endif // DADS_FDD_MODE_TX_H

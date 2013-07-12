@@ -26,7 +26,15 @@ SOURCES += main.cpp\
     BlindOFDM/blindofdm_multimediaread.cpp \
     BlindOFDM/blindofdm_framing.cpp \
     BlindOFDM/blindofdm_fec.cpp \
-    BlindOFDM/blindofdm_modem.cpp
+    BlindOFDM/blindofdm_modem.cpp \
+    DADS/dads_ber_test.cpp \
+    DADS/dads_framing.cpp \
+    DADS/dads_fdd_mode_rx.cpp \
+    DADS/dads_fdd_mode_tx.cpp \
+    DADS/dads_multimediaread.cpp \
+    DADS/dads_fec.cpp \
+    DADS/dads_modem.cpp \
+    DADS/dads_uhddevice.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -44,7 +52,17 @@ HEADERS  += mainwindow.h \
     BlindOFDM/blindofdm_multimediaread.h \
     BlindOFDM/blindofdm_framing.h \
     BlindOFDM/blindofdm_fec.h \
-    BlindOFDM/blindofdm_modem.h 
+    BlindOFDM/blindofdm_modem.h \
+    DADS/dads_ber_test.h \
+    DADS/dads_framing.h \
+    DADS/dads_fdd_mode_rx.h \
+    DADS/dads_fdd_mode_tx.h \
+    DADS/dads_multimediaread.h \
+    DADS/dads_fec.h \
+    DADS/dads_modem.h \
+    DADS/dads_uhddevice.h \
+    waveform_rx.h \
+    waveform_tx.h
 
 FORMS    += mainwindow.ui
 

@@ -356,8 +356,10 @@ void BlindOFDM_TDD_Mode_RX::run(){
     }
 
     //finished
-    std::cout << std::endl << "Done!" << std::endl << std::endl;
     noderunning=false;
+    device->is_receiving=false;
+    std::cout << std::endl << "Done!" << std::endl << std::endl;
+
 
 
 

@@ -10,50 +10,43 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef BLINDOFDM_TDD_MODE_TX_H
-#define BLINDOFDM_TDD_MODE_TX_H
+#ifndef DADS_FDD_MODE_RX_H
+#define DADS_FDD_MODE_RX_H
 #include <QThread>
 #include "ui_mainwindow.h"
-#include "blindofdm_modem.h"
-#include "blindofdm_uhddevice.h"
-#include "blindofdm_framing.h"
-#include "waveform_tx.h"
+#include "dads_modem.h"
+#include "dads_uhddevice.h"
+#include "dads_framing.h"
+#include "waveform_rx.h"
 
-class BlindOFDM_TDD_Mode_TX: public Waveform_TX
+class DADS_FDD_Mode_RX: public Waveform_RX
 {
 Q_OBJECT
 public:
-    BlindOFDM_TDD_Mode_TX(Ui_MainWindow *ui);
-    void init();
-    BlindOFDM_Modem *blindofdm;
-    BlindOFDM_UHDDevice *device;
-    BlindOFDM_Framing *packets;
+    DADS_FDD_Mode_RX(Ui_MainWindow *ui);
+    DADS_Modem *dads;
+    DADS_UHDDevice *device;
+    DADS_Framing *packets;
     bool stop_signal;
     bool noderunning;
-    int Nfft;
-    int Ncp;
-    int num_subchannels;
-    int Number_of_OFDM_symbols;
-    int number_of_slots;
-    double time_gap;
+    int SF;
+    int nb_bits;
+    int Number_of_received_symbols;
     QString state;
     int myaddress;
     int destaddress;
-
-
-protected:
-    void run();
-
+    int Nfft;
 
 public slots:
     void update_uhd();
-    void setvalue(bool value);
-    void setvalue(int value);
 signals:
     void updated_uhd();
-    void valuechanged(bool newvalue);
+    void valuechanged(int newvalue);
+    void plotted(vec, int);
+    void plotted(cvec, int);
 
-
+protected:
+    void run();
 
 private:
     Ui_MainWindow *gui;
@@ -64,19 +57,16 @@ private:
     double rxrate;
     double rxfreq;
     double rxgain;
-    int sum_mask;
-    int Number_of_received_symbols;
-    int Modulation_Order;
-    bool first_tx_timestamp;
-    bvec data_packet;
-    bvec data_packet2;
-    int tx_best_group;
-    int nb_read;
-    cvec tx_buff;
-    double tx_timestamp;
+    cvec rx_buff;
     QString number;
-    bool is_time_set;
+    bvec received_bits;
+    bvec received_bits2;
+    bool is_dads;
+    bool is_synchronized;
+    int nb_packet;
+    int OF;
+    int correction;
+
 };
 
-#endif // BLINDOFDM_TDD_MODE_TX_H
-
+#endif // DADS_FDD_MODE_RX_H

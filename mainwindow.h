@@ -22,6 +22,11 @@
 #include "Multimedia/plot.h"
 #include "BlindOFDM/blindofdm_tdd_mode_rx.h"
 #include "BlindOFDM/blindofdm_tdd_mode_tx.h"
+#include "DADS/dads_ber_test.h"
+#include "DADS/dads_fdd_mode_tx.h"
+#include "DADS/dads_fdd_mode_rx.h"
+#include "waveform_rx.h"
+#include "waveform_tx.h"
 
 namespace Ui {
     class MainWindow;
@@ -55,6 +60,8 @@ private slots:
     void on_lineEdit_8_returnPressed();
     void on_lineEdit_9_returnPressed();
     void on_lineEdit_10_returnPressed();
+    void on_comboBox_activated(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     Video_TX *video_tx;
@@ -63,10 +70,10 @@ private:
     Audio_RX *audio_rx;
     Text_TX *text_tx;
     Text_RX *text_rx;
-    //BlindOFDM
-    BlindOFDM_TDD_Mode_RX *waveform_rx;
-    BlindOFDM_TDD_Mode_TX *waveform_tx;
     Plot *plot;
+    Waveform_RX *waveform_rx;
+    Waveform_TX *waveform_tx;
+    QString store_text;
 
 };
 
