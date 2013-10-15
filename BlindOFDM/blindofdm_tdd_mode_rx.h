@@ -72,6 +72,7 @@ private:
     bool first_tx_timestamp;
     bvec data_packet;
     int tx_best_group;
+    int rx_best_group;
     bool is_time_set;
     double timestamp;
     cvec rx_buff;
@@ -79,7 +80,7 @@ private:
     bool is_ofdm;
     int start_frame;
     bvec received_bits;
-    bvec received_bits2;
+    //bvec received_bits2;
     vec estimated_channel;
     double sync_time;
     QString number;

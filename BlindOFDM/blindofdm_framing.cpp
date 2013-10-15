@@ -436,7 +436,6 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
     int i=0;
     while((i<int(information.size())-17)&&(packet_ok==false)){
         if((information[i]=='!')&&(information[i+1]=='!')&&(information[i+2]=='H')&&(information[i+14]=='!')&&(information[i+15]=='!')&&(information[i+16]=='H')){
-            packet_ok=true;
             if(('0'+ my_adress)==information[i+4]){
                 src_adress=int(information[i+3]-'0');
                 best_group=int(information[i+5]-'0');
@@ -486,7 +485,7 @@ bool BlindOFDM_Framing::decode_frame(bvec received_bits, int my_adress,int &src_
                         else{
                             cout << "CRC OK" << endl;
                             buff=bvec2charvec(decoded_bits);
-
+                            packet_ok=true;
 
                             //cout << "Number of chars to be written " << buff.size() << endl;
                             //for(unsigned int i=0;i<buff.size();i++)

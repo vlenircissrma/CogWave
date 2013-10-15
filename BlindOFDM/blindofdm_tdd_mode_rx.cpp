@@ -117,7 +117,7 @@ void BlindOFDM_TDD_Mode_RX::run(){
     stop_signal=false;
     noderunning=true;
     bool packet_ok;
-
+    bvec received_bits2;
 
     while(!stop_signal){
 
@@ -181,7 +181,7 @@ void BlindOFDM_TDD_Mode_RX::run(){
             device->rxerrors();
 
             //Compute the best group of subcarriers
-            tx_best_group=sensing->best_group_mask(spectrum_sensed,num_subchannels);
+            rx_best_group=sensing->best_group_mask(spectrum_sensed,num_subchannels);
 
             //Detect if there is a OFDM signal in the received samples
             //The following line determine if there is an OFDM signal using the whole bandwidth
@@ -340,16 +340,14 @@ void BlindOFDM_TDD_Mode_RX::run(){
                         emit valuechanged(correction);
                     }
                 }
-                if(packet_ok==false){
-                    cout << "SOF NOT FOUND" << endl;
-                    //cout << "TIME OFFSET "  << blindofdm->time_offset_estimate << endl;
-                    //device->correction=blindofdm->time_offset_estimate/rxrate;
+                else{
+                    //Transfer the best group to TX
+                    emit valuechanged(rx_best_group);
                 }
-
             }
             else{
                 //Transfer the best group to TX
-                emit valuechanged(tx_best_group);
+                emit valuechanged(rx_best_group);
             }
 
         qApp->processEvents();
