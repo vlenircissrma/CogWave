@@ -19,22 +19,27 @@ SOURCES += main.cpp\
     Multimedia/text_tx.cpp \
     Multimedia/text_rx.cpp \
     Multimedia/plot.cpp \
-    BlindOFDM/blindofdm_uhddevice.cpp \
-    BlindOFDM/blindofdm_tdd_mode_tx.cpp \
-    BlindOFDM/blindofdm_tdd_mode_rx.cpp \
-    BlindOFDM/blindofdm_sensing.cpp \
-    BlindOFDM/blindofdm_multimediaread.cpp \
-    BlindOFDM/blindofdm_framing.cpp \
-    BlindOFDM/blindofdm_fec.cpp \
-    BlindOFDM/blindofdm_modem.cpp \
-    DADS/dads_ber_test.cpp \
-    DADS/dads_framing.cpp \
-    DADS/dads_fdd_mode_rx.cpp \
-    DADS/dads_fdd_mode_tx.cpp \
-    DADS/dads_multimediaread.cpp \
-    DADS/dads_fec.cpp \
-    DADS/dads_modem.cpp \
-    DADS/dads_uhddevice.cpp
+    Modems/modem_ofdma.cpp \
+    Modems/modem_dads.cpp \
+    Modems/modem_bpsk.cpp \
+    Modems/modem_gmsk.cpp \
+    Modems/BER_Tests/ofdma_ber_test.cpp \
+    Modems/BER_Tests/dads_ber_test.cpp \
+    Modems/BER_Tests/bpsk_ber_test.cpp \
+    Common/uhddevice.cpp \
+    Common/fec.cpp \
+    Common/packet.cpp \
+    Common/sensing.cpp \
+    waveform_tdd_rx.cpp \
+    waveform_tdd_tx.cpp \
+    waveform_fdd_rx.cpp \
+    waveform_fdd_tx.cpp \
+    Modems/BER_Tests/gmsk_ber_test.cpp \
+    Modems/modem_qpsk.cpp \
+    Modems/BER_Tests/qpsk_ber_test.cpp \
+    Modems/modem_cpfsk.cpp \
+    Modems/BER_Tests/cpfsk_ber_test.cpp \
+
 
 
 HEADERS  += mainwindow.h \
@@ -45,24 +50,29 @@ HEADERS  += mainwindow.h \
     Multimedia/text_tx.h \
     Multimedia/text_rx.h \
     Multimedia/plot.h \
-    BlindOFDM/blindofdm_uhddevice.h \
-    BlindOFDM/blindofdm_tdd_mode_tx.h \
-    BlindOFDM/blindofdm_tdd_mode_rx.h \
-    BlindOFDM/blindofdm_sensing.h \
-    BlindOFDM/blindofdm_multimediaread.h \
-    BlindOFDM/blindofdm_framing.h \
-    BlindOFDM/blindofdm_fec.h \
-    BlindOFDM/blindofdm_modem.h \
-    DADS/dads_ber_test.h \
-    DADS/dads_framing.h \
-    DADS/dads_fdd_mode_rx.h \
-    DADS/dads_fdd_mode_tx.h \
-    DADS/dads_multimediaread.h \
-    DADS/dads_fec.h \
-    DADS/dads_modem.h \
-    DADS/dads_uhddevice.h \
-    waveform_rx.h \
-    waveform_tx.h
+    Modems/modem_ofdma.h \
+    Modems/modem_dads.h \
+    Modems/modem_bpsk.h \
+    Modems/modem_gmsk.h \
+    Modems/BER_Tests/ofdma_ber_test.h \
+    Modems/BER_Tests/dads_ber_test.h \
+    Modems/BER_Tests/bpsk_ber_test.h \
+    Common/uhddevice.h \
+    Common/fec.h \
+    Common/packet.h \
+    Common/sensing.h \
+    Common/waveform_rx.h \
+    Common/waveform_tx.h \
+    waveform_tdd_rx.h \
+    waveform_tdd_tx.h \
+    waveform_fdd_rx.h \
+    waveform_fdd_tx.h \
+    Modems/BER_Tests/gmsk_ber_test.h \
+    Modems/modem_qpsk.h \
+    Modems/BER_Tests/qpsk_ber_test.h \
+    Modems/modem_cpfsk.h \
+    Modems/BER_Tests/cpfsk_ber_test.h \
+
 
 FORMS    += mainwindow.ui
 
@@ -93,6 +103,34 @@ INCLUDEPATH += /usr/lib64/glib-2.0/include/
 INCLUDEPATH += /usr/include/libxml2
 LIBS += -lgstreamer-0.10 -lgstinterfaces-0.10
 LIBS += -lgobject-2.0 -lglib-2.0
+
+# Added by V. Le Nir for Gnuradio integration
+CONFIG += link_pkgconfig
+PKGCONFIG += gnuradio-digital
+INCLUDEPATH += /usr/local/include/gnuradio
+LIBS += -lboost_system
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

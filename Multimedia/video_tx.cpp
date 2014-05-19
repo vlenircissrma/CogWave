@@ -36,7 +36,7 @@ Video_TX::Video_TX(){
     g_object_set(G_OBJECT(video_encoder),"quality",16,NULL);
     file_sink = gst_element_factory_make("filesink","file_sink");
     g_object_set(G_OBJECT(file_sink),"location","video_inputpipe",NULL);
-    g_object_set(G_OBJECT(file_sink),"buffer-mode",1,NULL);
+    g_object_set(G_OBJECT(file_sink),"buffer-mode",2,NULL);
     gst_bin_add_many(GST_BIN(pipeline),video_src,video_scale,video_rate,video_filter,video_tee,video_queue,video_sink,file_queue,video_encoder,file_sink,NULL);
     gst_element_link_many(video_src,video_scale,video_rate,NULL);
     gst_element_link_filtered(video_rate,video_filter,caps);

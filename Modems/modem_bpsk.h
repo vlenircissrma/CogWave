@@ -9,36 +9,27 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef MODEM_BPSK_H
+#define MODEM_BPSK_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
 
-#include "text_tx.h"
+class Modem_BPSK
+{
+public:
+    Modem_BPSK();
+    vec generate_rrc_taps(double gain,double sampling_freq,double symbol_rate,double alpha,int ntaps);
+    cvec modulate(bvec data_packet);
+    bvec demodulate(cvec rx_buff, cvec &out);
+    cvec costas_mm(cvec received_samples);
+    cvec costas_pfb(cvec received_samples);
+    bool preamble_detection(bvec received_bits,bvec &received_bits2, int &preamble_start);
+    bvec charvec2bvec(vector<char> input);
+    int nb_bits;
+    int OF;
+    Root_Raised_Cosine<double> rrc;
+};
 
-Text_TX::Text_TX(){
-
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
-
-
-}
-
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
-
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}
+#endif // MODEM_BPSK_H

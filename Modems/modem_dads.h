@@ -9,36 +9,29 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef MODEM_DADS_H
+#define MODEM_DADS_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
 
-#include "text_tx.h"
+class Modem_DADS
+{
+public:
+    Modem_DADS();
+    cvec modulate(bvec data_packet);
+    bvec demodulate(cvec rx_buff, int OF, int &time_offset, vec &received_symbols);
+    bool preamble_detection(bvec received_bits,bvec &received_bits2, int &preamble_start);
+    bvec charvec2bvec(vector<char> input);
+    int delay;
+    int SF;
+    int nb_bits;
+    int time_offset_estimate;
+private:
+    int SF_pseudo;
+    Spread_1d spread;
 
-Text_TX::Text_TX(){
+};
 
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
-
-
-}
-
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
-
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}
+#endif // DADS_MODEM_H

@@ -9,36 +9,21 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef CPFSK_BER_TEST_H
+#define CPFSK_BER_TEST_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
+#include "Modems/modem_cpfsk.h"
 
-#include "text_tx.h"
+class CPFSK_BER_Test
+{
+public:
+    CPFSK_BER_Test();
 
-Text_TX::Text_TX(){
+private:
+    Modem_CPFSK *modem;
+};
 
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
-
-
-}
-
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
-
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}
+#endif // CPFSK_BER_TEST_H

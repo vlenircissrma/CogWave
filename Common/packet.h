@@ -10,35 +10,54 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "text_tx.h"
+#ifndef PACKET_H
+#define PACKET_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <vector>
+#include <QString>
+#include "Common/fec.h"
 
-Text_TX::Text_TX(){
+class Packet
+{
+public:
+    Packet(int nb_bits);
+    bvec encode_packet(int my_adress,int dest_adress, int &nb_read);
+    bool decode_packet(bvec received_bits, int my_adress,int &src_adress);
+    bvec charvec2bvec(vector<char> input);
+    vector<char> bvec2charvec(bvec input);
+    double ber_count(bvec input);
+    void file_close();
+    void restart_video();
+    void restart_audio();
+    bool is_ber_count;
 
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
+private:
 
+    int packet_size;
 
-}
+    FEC *fec;
 
-void Text_TX::init_text(QString text){
+    int fd_input_video, fd_input_audio, fd_input_text;
+    int fd_output_video, fd_output_audio, fd_output_text;
 
-myText=text;
+    ofstream video_outfile;
+    ofstream audio_outfile;
+    ofstream text_outfile;
 
-}
+    vector<char> last_mp3;
+    vector<char> last_jpeg;
 
-void Text_TX::run(){
+    int packetnotx;
+    int packetnorx;
+    int previous_packetnorx;
+    bvec scrambling;
+    LFSR lfsr;
+};
+#endif // PACKET_H
 
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}

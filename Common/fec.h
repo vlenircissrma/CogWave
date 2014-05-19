@@ -9,36 +9,24 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef FEC_H
+#define FEC_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
 
-#include "text_tx.h"
+class FEC
+{
+public:
+    FEC();
+    bvec encode_packet(bvec diff_data_packet);
+    bvec decode_packet(bvec received_bits);
 
-Text_TX::Text_TX(){
+    int rate;
+private:
+    Convolutional_Code code;
+};
 
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
+#endif // FEC_H
 
-
-}
-
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
-
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}

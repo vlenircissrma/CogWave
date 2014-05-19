@@ -9,36 +9,57 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "fec.h"
 
-#include "text_tx.h"
+FEC::FEC()
+{
 
-Text_TX::Text_TX(){
+    rate=1;
 
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
+    if(rate==3){
+        ivec generator(3);
+        generator(0)=0133;
+        generator(1)=0165;
+        generator(2)=0171;
+        code.set_generator_polynomials(generator, 7);
+    }
+    if(rate==2){
+        ivec generator(2);
+        generator(0)=0023;
+        generator(1)=0035;
+        code.set_generator_polynomials(generator, 5);
+    }
+
+}
+
+
+bvec FEC::encode_packet(bvec diff_data_packet){
+
+
+    if(rate>1){
+        bvec encoded_data_packet;
+        code.encode(diff_data_packet, encoded_data_packet);
+        return encoded_data_packet;
+    }
+    else{
+        return diff_data_packet;
+    }
+}
+
+
+
+
+bvec FEC::decode_packet(bvec received_bits){
+
+    if(rate>1){
+        BPSK bpsk;
+        vec received_modulated=bpsk.modulate_bits(received_bits);
+        return code.decode(received_modulated);
+    }
+    else{
+        return received_bits;
+    }
 
 
 }
 
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
-
-
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
-
-
-}

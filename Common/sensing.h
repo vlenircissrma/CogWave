@@ -10,35 +10,23 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "text_tx.h"
-
-Text_TX::Text_TX(){
-
-file.setFileName("text_inputpipe");
-out.setDevice(&file);
-
-
-}
-
-void Text_TX::init_text(QString text){
-
-myText=text;
-
-}
-
-void Text_TX::run(){
+#ifndef SENSING_H
+#define SENSING_H
+#include <itpp/itcomm.h>
+#include <itpp/itstat.h>
+using namespace std;
+using namespace itpp;
 
 
-        if(!file.isOpen()){
-            file.open(QIODevice::WriteOnly|QIODevice::Text);
-            cout << "text_inputpipe has been opened for writing" << endl;
-        }
-        else{
-            cout << "text_inputpipe is already opened for writing" << endl;
-        }
-
-        out << "!!T" << myText << "!!T";
-        out.flush();
+class Sensing
+{
+public:
+    Sensing();
+    vec spectrum_block(cvec rx_buff,int Nfft);
+    int best_group_mask(vec spectrum_sensed,int num_subchannels);
 
 
-}
+};
+
+#endif // SENSING_H
+

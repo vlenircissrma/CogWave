@@ -20,13 +20,18 @@
 #include "Multimedia/text_tx.h"
 #include "Multimedia/text_rx.h"
 #include "Multimedia/plot.h"
-#include "BlindOFDM/blindofdm_tdd_mode_rx.h"
-#include "BlindOFDM/blindofdm_tdd_mode_tx.h"
-#include "DADS/dads_ber_test.h"
-#include "DADS/dads_fdd_mode_tx.h"
-#include "DADS/dads_fdd_mode_rx.h"
-#include "waveform_rx.h"
-#include "waveform_tx.h"
+#include "Common/waveform_rx.h"
+#include "Common/waveform_tx.h"
+#include "waveform_tdd_rx.h"
+#include "waveform_tdd_tx.h"
+#include "waveform_fdd_rx.h"
+#include "waveform_fdd_tx.h"
+#include "Modems/BER_Tests/dads_ber_test.h"
+#include "Modems/BER_Tests/ofdma_ber_test.h"
+#include "Modems/BER_Tests/bpsk_ber_test.h"
+#include "Modems/BER_Tests/gmsk_ber_test.h"
+#include "Modems/BER_Tests/qpsk_ber_test.h"
+#include "Modems/BER_Tests/cpfsk_ber_test.h"
 
 namespace Ui {
     class MainWindow;
@@ -50,6 +55,8 @@ private slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
     void on_pushButton_3_clicked();
+    void on_pushButton_4_clicked();
+    void on_pushButton_5_clicked();
     void on_lineEdit_returnPressed();
     void on_lineEdit_2_returnPressed();
     void on_lineEdit_3_returnPressed();
@@ -61,6 +68,7 @@ private slots:
     void on_lineEdit_9_returnPressed();
     void on_lineEdit_10_returnPressed();
     void on_comboBox_activated(const QString &arg1);
+    void on_comboBox_2_activated(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
@@ -74,6 +82,15 @@ private:
     Waveform_RX *waveform_rx;
     Waveform_TX *waveform_tx;
     QString store_text;
+    QString store_text2;
+
+
+    //DADS_BER_Test *dads_ber_test;
+    //BLINDOFDM_BER_Test *blindofdm_ber_test;
+    //BPSK_BER_Test *bpsk_ber_test;
+    //GMSK_BER_Test *gmsk_ber_test;
+    //QPSK_BER_Test *qpsk_ber_test;
+    //CPFSK_BER_Test *cpfsk_ber_test;
 
 };
 
