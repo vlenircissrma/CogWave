@@ -36,6 +36,8 @@ public:
     void restart_video();
     void restart_audio();
     bool is_ber_count;
+    long int total_ber_size;
+    long int total_nb_errors;
 
 private:
 
@@ -58,6 +60,8 @@ private:
     int previous_packetnorx;
     bvec scrambling;
     LFSR lfsr;
+
+    double error_rate;
 };
 #endif // PACKET_H
 

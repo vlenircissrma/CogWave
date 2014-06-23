@@ -100,7 +100,9 @@ Packet::Packet(int nb_bits){
     lfsr.set_state(state);
     scrambling=lfsr.shift(nb_bits);
 
-
+    total_ber_size=0;
+    total_nb_errors=1;
+    error_rate=0.5;
 }
 
 void Packet::restart_video(){
@@ -359,7 +361,7 @@ bool Packet::decode_packet(bvec received_bits, int my_adress, int &src_adress)
     int i=0;
     while((i<int(information.size())-12)&&(packet_ok==false)){
         if((information[i]=='!')&&(information[i+1]=='!')&&(information[i+2]=='H')&&(information[i+9]=='!')&&(information[i+10]=='!')&&(information[i+11]=='H')){
-            //cout << "PREAMBLE FOUND " << i << endl;
+            cout << "PREAMBLE FOUND " << i << endl;
             if(('0'+ my_adress)==information[i+4]){
                 src_adress=int(information[i+3]-'0');
 
@@ -608,7 +610,6 @@ return output;
 double Packet::ber_count(bvec input){
 
 
-    double error_rate=-1.0;
     if(input.size()>112){
         int ber_size=packet_size-512;
         if(input.size()<96+ber_size)
@@ -621,9 +622,10 @@ double Packet::ber_count(bvec input){
         lfsr2.set_state(reverse(state));
         scrambling=concat(state,lfsr2.shift(ber_size));
         int nb_errors=sum(to_ivec(scrambling.get(0,ber_size-1)+input.get(96,96+ber_size-1)));
-        error_rate=((double) nb_errors)/ber_size;
+        total_ber_size=total_ber_size+ber_size;
+        total_nb_errors=total_nb_errors+nb_errors;
+        error_rate=((double) total_nb_errors)/total_ber_size;
     }
-
     return error_rate;
 
 }

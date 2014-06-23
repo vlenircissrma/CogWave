@@ -349,7 +349,7 @@ void Waveform_TDD_RX::run(){
             if(preamble_ok==true){
 
                if(packet->is_ber_count==true)
-                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2)));
+                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
 
                if((is_time_set==false)&&(first_tx_timestamp==true)){
@@ -450,7 +450,7 @@ void Waveform_TDD_RX::run(){
             }
             else{
                 if(packet->is_ber_count==true)
-                     gui->label_10->setText(number.setNum(-1.0));
+                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
                 cout << "SOF NOT FOUND" << endl;
 
                 if(waveform==2){

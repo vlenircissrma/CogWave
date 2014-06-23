@@ -299,8 +299,8 @@ void Waveform_FDD_RX::run(){
             //cout << "TIME OFFSET ESTIMATE " << time_offset_estimate << endl;
             if(preamble_ok==true){
 
-               if(packet->is_ber_count==true)
-                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2)));
+                if(packet->is_ber_count==true)
+                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
 
 
@@ -362,7 +362,7 @@ void Waveform_FDD_RX::run(){
             }
             else{
                 if(packet->is_ber_count==true)
-                     gui->label_10->setText(number.setNum(-1.0));
+                    gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
                 cout << "SOF NOT FOUND" << endl;
 
                 if(is_resynchronized){
