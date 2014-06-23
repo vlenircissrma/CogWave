@@ -361,7 +361,7 @@ bool Packet::decode_packet(bvec received_bits, int my_adress, int &src_adress)
     int i=0;
     while((i<int(information.size())-12)&&(packet_ok==false)){
         if((information[i]=='!')&&(information[i+1]=='!')&&(information[i+2]=='H')&&(information[i+9]=='!')&&(information[i+10]=='!')&&(information[i+11]=='H')){
-            cout << "PREAMBLE FOUND " << i << endl;
+            //cout << "PREAMBLE FOUND " << i << endl;
             if(('0'+ my_adress)==information[i+4]){
                 src_adress=int(information[i+3]-'0');
 
