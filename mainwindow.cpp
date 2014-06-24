@@ -76,7 +76,6 @@ void MainWindow::on_pushButton_clicked()
             connect(waveform_rx,SIGNAL(valuechanged(bool,double)),waveform_tx,SLOT(setvalue(bool,double)),Qt::BlockingQueuedConnection);
             connect(waveform_rx,SIGNAL(valuechanged(int)),waveform_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
             connect(waveform_rx,SIGNAL(waveformset(int)),waveform_tx,SLOT(setwaveform(int)),Qt::BlockingQueuedConnection);
-            connect(waveform_rx,SIGNAL(valuechanged2(double)),waveform_tx,SLOT(setvalue2(double)),Qt::BlockingQueuedConnection);
 
             plot = new Plot(ui,((Waveform_TDD_RX*)waveform_rx)->Nfft);
             qRegisterMetaType<vec>("vec");
