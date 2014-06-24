@@ -38,6 +38,7 @@ public:
     bool is_ber_count;
     long int total_ber_size;
     long int total_nb_errors;
+    int packetnorx;
 
 private:
 
@@ -56,7 +57,6 @@ private:
     vector<char> last_jpeg;
 
     int packetnotx;
-    int packetnorx;
     int previous_packetnorx;
     bvec scrambling;
     LFSR lfsr;

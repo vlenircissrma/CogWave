@@ -97,6 +97,7 @@ private:
     double previous_time;
     bool is_resynchronized;
     short bitspersymbol;
+    int previous_packet_number;
 };
 
 #endif // Waveform_TDD_RX_H

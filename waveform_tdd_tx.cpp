@@ -62,6 +62,7 @@ void Waveform_TDD_TX::setvalue(bool value, double value2){
 
     is_time_set=value;
     tx_timestamp=value2;
+    device->tx_timestamp=value2+time_gap/2;
 
 }
 
@@ -206,7 +207,7 @@ void Waveform_TDD_TX::run(){
         if(state=="SEND"){
             //cout << "########### PROCESSING TX PACKET ########### " << device->time() << " #############" << endl;
 
-/*            //Solution which send the packet in every slot until the packet gets updated.
+            //Solution which send the packet in every slot until the packet gets updated.
             if(previous_tx_timestamp!=device->tx_timestamp){
                 data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
                 if(nb_read>0){
@@ -253,9 +254,9 @@ void Waveform_TDD_TX::run(){
                     tx_timestamp=tx_timestamp-time_gap/2;
                 }
 
-            }*/
+            }
 
-            //Solution to be sure to send the packet only in one slot. Be careful, not all slots will be filled
+            /*//Solution to be sure to send the packet only in one slot. Be careful, not all slots will be filled
             //if there is not enough processing power to compute one packet in the time_gap period.
             if(previous_tx_timestamp!=tx_timestamp){
                 data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
@@ -287,7 +288,7 @@ void Waveform_TDD_TX::run(){
                     tx_timestamp=device->sendsamples(tx_buff,tx_timestamp);
                     tx_timestamp=tx_timestamp-time_gap/2;
                 }
-            }
+            }*/
 
 
 

@@ -59,6 +59,7 @@ Waveform_TDD_RX::Waveform_TDD_RX(Ui_MainWindow *ui)
     previous_estimated_throughput=0;
     previous_time=0;
     Nfft=512;
+    previous_packet_number=0;
 }
 
 void Waveform_TDD_RX::update_uhd(){
@@ -396,16 +397,6 @@ void Waveform_TDD_RX::run(){
                             correction=(preamble_start*OF-64*OF)/2/rxrate;
                         if(waveform==6)
                             correction=(preamble_start*OF-64*OF)/rxrate;
-                        if(waveform==7){
-                            if(time_offset_estimate>Nfft-1)
-                                correction=(time_offset_estimate-(Nfft+Ncp))/rxrate+int(preamble_start/(Nfft/2*bitspersymbol))*2*(Nfft+Ncp)/rxrate;
-                            else
-                                correction=(time_offset_estimate)/rxrate+int(preamble_start/(Nfft/2*bitspersymbol))*2*(Nfft+Ncp)/rxrate;
-                        }
-                        if(waveform==8)
-                            correction=(time_offset_estimate-2056)/rxrate;
-
-
 
                         emit valuechanged(correction);
 
@@ -414,6 +405,10 @@ void Waveform_TDD_RX::run(){
 
                 bool packet_ok=packet->decode_packet(received_bits2,myaddress,src_adress);
                 if(packet_ok==true){
+                    if(previous_packet_number+100<packet->packetnorx){
+                        emit valuechanged(is_time_set,(device->rx_md.time_spec).get_real_secs()+correction);
+                        previous_packet_number=packet->packetnorx;
+                    }
                     if(is_resynchronized==false)
                              is_resynchronized=true;
                     if(waveform==2){
@@ -432,7 +427,7 @@ void Waveform_TDD_RX::run(){
                                 previous_estimated_throughput=estimated_throughput;
                                 estimated_throughput=0.9*estimated_throughput+0.1*received_bits2.size()/(current_time-previous_time);
                                 previous_time=current_time;
-                            }
+                            }                            
                         }
                     }
 
