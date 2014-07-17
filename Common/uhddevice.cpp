@@ -273,8 +273,8 @@ void UHDDevice::run(){
         }
         if(is_receiving){
 
-
-            rx_buff2.set_size(rx_buff.size());
+            int rx_buff_size=rx_buff.size();
+            rx_buff2.set_size(rx_buff_size);
             rx_buff2.zeros();
             //uhd::rx_metadata_t rx_md;
             uhd::stream_args_t stream_args("fc64");
@@ -283,10 +283,14 @@ void UHDDevice::run(){
             //Receiving mode
             usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
             while(is_receiving){
-                if((previous_correction!=correction)&&(abs(previous_correction-correction)>10)){
+                if((previous_correction!=correction)&&(abs(previous_correction-correction)>10)&&(abs(rx_buff_size-correction)>10)){
                      rx_buff2.set_size(correction);
                      num_rx_samps=rx_stream->recv(&rx_buff2(0), rx_buff2.size(), rx_md);
-                     rx_buff2.set_size(rx_buff.size());
+                     if(correction>rx_buff_size)
+                         rx_buff=rx_buff2.get(0,rx_buff_size-1);
+                     else
+                         rx_buff=concat(rx_buff2,zeros_c(rx_buff_size-correction));
+                     rx_buff2.set_size(rx_buff_size);
                      previous_correction=correction;
                 }
 
