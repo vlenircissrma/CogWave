@@ -5,7 +5,12 @@ CogWave: Open-source Software Framework for Cognitive Radio Waveform Design
 
 
 CogWave is an open-source software framework aiming at developing cognitive radio (CR) waveforms.
-Multiple waveforms have been implemented in CogWave, such as the multichannel DAA-OFDM waveform, the DADS waveform, and GNU Radio waveforms. CogWave provides the means to implement different CR waveforms and to develop rules to switch between different CR waveforms during run-time according to the user needs and the electromagnetic environment. With this code the CR nodes switch from the DADS to the multichannel DAA-OFDM waveforms automatically while maintaining communication when the throughput drops under a predefined threshold.
+For the physical layer, the CogWave framework provides many modulation schemes, such as the multichannel DAA-OFDM, the DADS modulation scheme with a short spreading sequence, and other modulation schemes ported from the GNU Radio framework (OFDM, BPSK, QPSK, GMSK,
+CPFSK etc.). The CogWave framework is able to reconfigure the modulation scheme during run-time (e.g. switching from DADS to multichannel DAA-OFDM in the presence of a jammer) and allows precise timing control for burst transmissions (FDD and TDD). The CogWave framework can be interfaced with SDR hardware (USRP, HackRF) for testbed evaluation.
+For the data link layer, the CogWave provides several MAC protocols (Point-to-Point-TDD, Point-to-Point-FDD, Aloha, non-persistent CSMA, 1-persistent CSMA, p-persistent CSMA, TDMA, OFDMA). The CogWave framework can be interfaced with external applications by named pipes (FIFO) or virtual network interfaces at data link layer (TAP) or network layer (TUN).
+For instance, the CogWave framework can be combined with networks simulators (e.g. OMNeT++, ns-3) and network emulators (e.g. CORE) to obtain a CRN software framework for high fidelity simulation of CRN. Realistic channel models (AWGN channel, log-distance path loss, fading channel, frequency-
+selective fading) have been implemented for simulating a high number of nodes.
+
 
 For more information, visit our website http://www.sic.rma.ac.be/~vlenir/CogWave
 
@@ -20,7 +25,7 @@ To get help and to report bugs, post your message to the google group https://gr
 ![Setup Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/setup.jpg)
 ![Features Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/features.jpg)
 ![Applications Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/applications.jpg)
-
+![High-Fidelity Simulation Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/combination.jpg)
 
 INSTALLATION (Ubuntu 14.04 LTS)
 ===============================
@@ -43,13 +48,13 @@ sudo apt-get install libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev gstr
 
 5) UHD
 
-http://code.ettus.com/redmine/ettus/projects/uhd/wiki/UHD_Linux
+https://github.com/EttusResearch/uhd
 
-6) Gnu Radio 3.6.5
+6) Gnu Radio > 3.7
 
-http://gnuradio.org/releases/gnuradio/gnuradio-3.6.5.tar.gz
+https://github.com/gnuradio/gnuradio
 
-7) Open CogWave.pro in QtCreator and launch the Application !
+7) Open CogWave.pro (modify directories according to your installation path) in QtCreator and launch the Application !
 
 
 

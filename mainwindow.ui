@@ -354,37 +354,52 @@
     </property>
     <item>
      <property name="text">
-      <string>WF1:DADS</string>
+      <string>L1:DADS</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF2:OFDMA</string>
+      <string>L1:MCDAAOFDM</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF3:BPSK</string>
+      <string>L1:BPSK</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF4:GMSK</string>
+      <string>L1:GMSK</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF5:QPSK</string>
+      <string>L1:QPSK</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF6:CPFSK</string>
+      <string>L1:CPFSK</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>WF1-WF2</string>
+      <string>L1:DSSS</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L1:MCDADS</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L1:OFDM</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L1:DADS-MCDAAOFDM</string>
      </property>
     </item>
    </widget>
@@ -431,19 +446,39 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>366</y>
+      <y>180</y>
       <width>121</width>
       <height>31</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>TDD</string>
+      <string>L2:Point to Point TDD</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>FDD</string>
+      <string>L2:Point to Point FDD</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L2:ALOHA</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L2:CSMA</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L2:TDMA TDD</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>L2:OFDMA TDD</string>
      </property>
     </item>
    </widget>
