@@ -15,6 +15,11 @@
 #include <itpp/itstat.h>
 using namespace std;
 using namespace itpp;
+#include "injector_float.h"
+#include "sniffer_float.h"
+#include <gnuradio/top_block.h>
+#include <gnuradio/digital/clock_recovery_mm_ff.h>
+#include <gnuradio/digital/pfb_clock_sync_fff.h>
 
 class Modem_CPFSK
 {
@@ -32,6 +37,9 @@ public:
     int OF;
     double h_index;
     Pulse_Shape<double,double,double> upsampled_shaper;
+    gr::top_block_sptr tb;
+    sniffer_float_sptr sniffer_demodulator;
+    injector_float_sptr injector_demodulator;
 
 };
 

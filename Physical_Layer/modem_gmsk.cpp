@@ -11,45 +11,28 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "modem_gmsk.h"
 
-#define protected public
-#define private public
-#include "clock_recovery_mm_ff_impl.h"
-#include <pfb_clock_sync_fff_impl.h>
-#include <gnuradio/math.h>
-#undef protected
-#undef private
-
-
-
-static inline float
-slice(float x)
-{
-  return x < 0 ? -1.0F : 1.0F;
-}
-
 Modem_GMSK::Modem_GMSK()
 {
     nb_bits=63040;
     OF=4;
     h_index=0.5;
     unsigned L=4;
-    double bt=0.3;
+    double bt=0.5;
     vec gaussian_response=generate_gaussian_taps(OF,L,bt);
-    int gmsk_response_size=gaussian_response.size()+(OF-1);
-    vec gmsk_response(gmsk_response_size);
-    vec mask(gmsk_response_size);
-    for(int i=0;i<gmsk_response_size;i++){
+    int gaussian_response_size=gaussian_response.size()+(OF-1);
+    vec gaussian_rectangular_response(gaussian_response_size);
+    vec mask(gaussian_response_size);
+    for(int i=0;i<gaussian_response_size;i++){
         mask.zeros();
-        if(i>gmsk_response_size-OF){
-            mask.set_subvector(i,ones(OF-(i-(gmsk_response_size-OF))));
+        if(i>gaussian_response_size-OF){
+            mask.set_subvector(i,ones(OF-(i-(gaussian_response_size-OF))));
         }
         else
            mask.set_subvector(i,ones(OF));
-        gmsk_response[i]=sum(elem_mult(mask,concat(zeros(OF-1),gaussian_response)))/OF;
+        gaussian_rectangular_response[i]=sum(elem_mult(mask,concat(zeros(OF-1),gaussian_response)))/OF;
     }
-    shaper.set_coeffs(gmsk_response);
-    upsampled_shaper.set_pulse_shape(gmsk_response,OF);
-
+    shaper.set_coeffs(gaussian_rectangular_response);
+    upsampled_shaper.set_pulse_shape(gaussian_rectangular_response,OF);
 
 }
 
@@ -118,127 +101,10 @@ cvec Modem_GMSK::modulate(bvec data_packet)
     return to_cvec(fm_transmitted_symbols);
 }
 
-vec Modem_GMSK::mm_clock_recovery(vec received_samples){
-
-    //M&M Clock Recovery
-    float mu=0.5;
-    float gain_mu=0.0;
-    float omega=OF;
-    float gain_omega=0.25*gain_mu*gain_mu;
-    float omega_rel=0.005;
-    gr::digital::clock_recovery_mm_ff_impl d_clock_mm(omega,gain_omega,mu,gain_mu,omega_rel);
-
-
-    int rx_buff_size=received_samples.size();
-    int ninput_items=rx_buff_size-d_clock_mm.d_interp->ntaps();
-    int noutput_items=ninput_items/OF;
-    vec out;
-    out.set_size(noutput_items);
-
-    int i=0;
-    int o=0;
-    float mm_val;
-    float in[ninput_items];
-    for (int i=0;i<ninput_items;i++)
-        in[i]=received_samples[i];
-    while((o < noutput_items) && (i < ninput_items)) {
-        // produce output sample
-        out[o]=d_clock_mm.d_interp->interpolate(&in[i], d_clock_mm.d_mu);
-        mm_val=slice(d_clock_mm.d_last_sample)*out[o]-slice(out[o])*d_clock_mm.d_last_sample;
-        d_clock_mm.d_last_sample=out[o];
-
-        d_clock_mm.d_omega=d_clock_mm.d_omega + d_clock_mm.d_gain_omega*mm_val;
-        d_clock_mm.d_omega=d_clock_mm.d_omega_mid + gr::branchless_clip(d_clock_mm.d_omega-d_clock_mm.d_omega_mid,d_clock_mm.d_omega_relative_limit);
-        d_clock_mm.d_mu=d_clock_mm.d_mu + d_clock_mm.d_omega + d_clock_mm.d_gain_mu * mm_val;
-
-        i+=(int)floor(d_clock_mm.d_mu);
-        d_clock_mm.d_mu=d_clock_mm.d_mu-floor(d_clock_mm.d_mu);
-        o++;
-    }
-    return out;
-
-}
-
-vec Modem_GMSK::pfb_clock_recovery(vec received_samples){
-
-    //PFB Clock Recovery
-    vec gmsk_response=shaper.get_coeffs();
-    int gmsk_response_size=gmsk_response.size();
-    std::vector<float> taps(gmsk_response_size);
-    for(int i=0;i<gmsk_response_size;i++){
-        taps[i]=gmsk_response[i];
-    }
-    gr::digital::pfb_clock_sync_fff_impl d_clock_gmsk_pfb(OF,1.0,taps);
-
-    int rx_buff_size=received_samples.size();
-    // We need this many to process one output
-    int nrequired = rx_buff_size - d_clock_gmsk_pfb.d_taps_per_filter - d_clock_gmsk_pfb.d_osps;
-    int noutput_items2=rx_buff_size/OF;
-    vec out;
-    out.set_size(noutput_items2);
-
-    int i = 0;
-    int count = 0;
-    float in[rx_buff_size];
-    for(int i=0;i<rx_buff_size;i++)
-        in[i]=received_samples[i];
-
-
-    // produce output as long as we can and there are enough input samples
-    while((i < noutput_items2) && (count < nrequired)) {
-        while(d_clock_gmsk_pfb.d_out_idx < d_clock_gmsk_pfb.d_osps) {
-
-          d_clock_gmsk_pfb.d_filtnum = (int)floor(d_clock_gmsk_pfb.d_k);
-
-        // Keep the current filter number in [0, d_nfilters]
-        // If we've run beyond the last filter, wrap around and go to next sample
-        // If we've go below 0, wrap around and go to previous sample
-        while(d_clock_gmsk_pfb.d_filtnum >= d_clock_gmsk_pfb.d_nfilters) {
-            d_clock_gmsk_pfb.d_k -= d_clock_gmsk_pfb.d_nfilters;
-            d_clock_gmsk_pfb.d_filtnum -= d_clock_gmsk_pfb.d_nfilters;
-            count += 1;
-        }
-
-        while(d_clock_gmsk_pfb.d_filtnum < 0) {
-            d_clock_gmsk_pfb.d_k += d_clock_gmsk_pfb.d_nfilters;
-            d_clock_gmsk_pfb.d_filtnum += d_clock_gmsk_pfb.d_nfilters;
-            count -= 1;
-        }
-
-        out[i+d_clock_gmsk_pfb.d_out_idx] = d_clock_gmsk_pfb.d_filters[d_clock_gmsk_pfb.d_filtnum]->filter(&in[count+d_clock_gmsk_pfb.d_out_idx]);
-        d_clock_gmsk_pfb.d_k = d_clock_gmsk_pfb.d_k + d_clock_gmsk_pfb.d_rate_i + d_clock_gmsk_pfb.d_rate_f; // update phase
-        d_clock_gmsk_pfb.d_out_idx++;
-
-      }
-
-      // reset here; if we didn't complete a full osps samples last time,
-      // the early return would take care of it.
-      d_clock_gmsk_pfb.d_out_idx = 0;
-
-      // Update the phase and rate estimates for this symbol
-
-      float diff = d_clock_gmsk_pfb.d_diff_filters[d_clock_gmsk_pfb.d_filtnum]->filter(&in[count]);
-      d_clock_gmsk_pfb.d_error = out[i] * diff;
-
-
-      // Run the control loop to update the current phase (k) and
-      // tracking rate estimates based on the error value
-      d_clock_gmsk_pfb.d_rate_f = d_clock_gmsk_pfb.d_rate_f + d_clock_gmsk_pfb.d_beta*d_clock_gmsk_pfb.d_error;
-      d_clock_gmsk_pfb.d_k = d_clock_gmsk_pfb.d_k + d_clock_gmsk_pfb.d_alpha*d_clock_gmsk_pfb.d_error;
-      // Keep our rate within a good range
-      d_clock_gmsk_pfb.d_rate_f = gr::branchless_clip(d_clock_gmsk_pfb.d_rate_f, d_clock_gmsk_pfb.d_max_dev);
-
-      i+=d_clock_gmsk_pfb.d_osps;
-      count += (int)floor(d_clock_gmsk_pfb.d_sps);
-
-    }
-
-    return out;
-}
 
 bvec Modem_GMSK::demodulate(cvec rx_buff, vec &out)
 {
-    int rx_buff_size=rx_buff.size(); 
+    int rx_buff_size=rx_buff.size();
     //Differential Phase Detector
     double sensitivity = (double(M_PI)*h_index);
     std::complex<double> product;
@@ -249,11 +115,7 @@ bvec Modem_GMSK::demodulate(cvec rx_buff, vec &out)
         product=rx_buff[i]*conj(rx_buff[i-1]);
         fm_received_symbols[i-1]=1.0/sensitivity*std::arg(product);
     }
-    //M&M Clock Recovery
-    fm_received_symbols=upsampled_shaper.shape_samples(fm_received_symbols);
-    out=mm_clock_recovery(fm_received_symbols);
-    //PFB Clock Recovery
-    //out=pfb_clock_recovery(fm_received_symbols);
+
     //For BER Testing
     /*fm_received_symbols=upsampled_shaper.shape_samples(fm_received_symbols);
     out.set_size(rx_buff_size/OF);
@@ -264,6 +126,59 @@ bvec Modem_GMSK::demodulate(cvec rx_buff, vec &out)
         i+=4;
         o++;
     }*/
+
+
+    //CREATE TOP BLOCK
+    tb = gr::make_top_block("modem_gmsk");
+
+    /*//FIRST SYNC: M&M
+    float mu=0.5;
+    float gain_mu=0.0;
+    float omega=OF;
+    float gain_omega=0.25*gain_mu*gain_mu;
+    float omega_rel=0.005;
+    gr::digital::clock_recovery_mm_ff::sptr clock_mm;
+    clock_mm=gr::digital::clock_recovery_mm_ff::make(omega,gain_omega,mu,gain_mu,omega_rel);*/
+
+    //SECOND SYNC : PFB SYNC
+    vec gmsk_response=upsampled_shaper.get_pulse_shape();
+    int gmsk_response_size=gmsk_response.size();
+    std::vector<float> taps(gmsk_response_size);
+    for(int i=0;i<gmsk_response_size;i++){
+        taps[i]=gmsk_response[i];
+    }
+    gr::digital::pfb_clock_sync_fff::sptr clock_pfb;
+    clock_pfb=gr::digital::pfb_clock_sync_fff::make(OF,1.0,taps);
+
+    //INJECTOR DEMODULATOR
+    injector_demodulator=make_injector_float();
+
+    //SNIFFER DEMODULATOR
+    sniffer_demodulator=make_sniffer_float();
+    sniffer_demodulator->set_buffer_size(nb_bits);
+
+    /*//CONNECT FIRST SYNC
+    tb->connect(injector_demodulator,0,clock_mm,0);
+    tb->connect(clock_mm,0,sniffer_demodulator,0);*/
+
+    //CONNECT SECOND SYNC
+    tb->connect(injector_demodulator,0,clock_pfb,0);
+    tb->connect(clock_pfb,0,sniffer_demodulator,0);
+
+    //START TOP BLOCK
+    tb->start();
+
+    /*//FIRST SYNC: M&M
+    fm_received_symbols=upsampled_shaper.shape_samples(fm_received_symbols);
+    injector_demodulator->set_samples(fm_received_symbols);
+    usleep(100000);
+    out=sniffer_demodulator->get_samples();*/
+
+    //SECOND SYNC : PFB SYNC
+    injector_demodulator->set_samples(fm_received_symbols);
+    usleep(100000);
+    out=sniffer_demodulator->get_samples();
+
 
     double normalization=sqrt(1./out.size())*itpp::norm(out);
     if(normalization!=0.0)

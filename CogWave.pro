@@ -66,6 +66,8 @@ SOURCES += main.cpp\
     Physical_Layer/BER_Tests/ofdm_ber_test.cpp \
     Physical_Layer/sniffer_complex.cpp \
     Physical_Layer/injector_complex.cpp \
+    Physical_Layer/sniffer_float.cpp \
+    Physical_Layer/injector_float.cpp \
     Physical_Layer/sniffer_char.cpp \
     Physical_Layer/injector_char.cpp \
     Channel/hackrfdevice.cpp
@@ -131,6 +133,8 @@ HEADERS  += mainwindow.h \
     Physical_Layer/BER_Tests/ofdm_ber_test.h \
     Physical_Layer/sniffer_complex.h \
     Physical_Layer/injector_complex.h \
+    Physical_Layer/sniffer_float.h \
+    Physical_Layer/injector_float.h \
     Physical_Layer/sniffer_char.h \
     Physical_Layer/injector_char.h \
     Channel/hackrfdevice.h
@@ -146,14 +150,10 @@ LIBS += -lqwt-qt4
 
 # Added by V. Le Nir for IT++ integration
 LIBS += `/usr/bin/itpp-config --static --libs`
-LIBS += `/usr/local/bin/itpp-config --static --libs`
 
 # Added by V. Le Nir for UHD integration
-INCLUDEPATH += /usr/local/include/uhd
 INCLUDEPATH += /usr/include/uhd
-INCLUDEPATH += /opt/uhd/include/
-#LIBS += -luhd
-LIBS += -L/opt/uhd/lib64 -luhd
+LIBS += -luhd
 
 # Added by V. Le Nir for Gstreamer integration
 INCLUDEPATH += /usr/include/gstreamer-0.10
@@ -167,29 +167,10 @@ LIBS += -lgstreamer-0.10 -lgstinterfaces-0.10
 LIBS += -lgobject-2.0 -lglib-2.0
 
 # Added by V. Le Nir for Gnuradio integration
-PREFIX=/home/vlenir/Documents/5_Programmes/GnuRadio/gnuradio
 CONFIG += link_pkgconfig
 PKGCONFIG += gnuradio-digital gnuradio-filter gnuradio-blocks gnuradio-fft gnuradio-runtime gnuradio-analog
-#INCLUDEPATH += /usr/local/include/gnuradio
-INCLUDEPATH += $$PREFIX/gr-digital/lib
-INCLUDEPATH += $$PREFIX/gr-filter/lib
-INCLUDEPATH += $$PREFIX/gr-fft/lib
 LIBS += -lboost_system -lfftw3f
 LIBS += -lhackrf
-
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/mpsk_receiver_cc_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/fll_band_edge_cc_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/constellation_receiver_cb_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/pfb_clock_sync_ccf_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/pfb_clock_sync_fff_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/clock_recovery_mm_ff_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/ofdm_carrier_allocator_cvc_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/ofdm_serializer_vcc_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/ofdm_frame_equalizer_vcvc_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/ofdm_sync_sc_cfb_impl.cc.o
-LIBS += $$PREFIX/build/gr-digital/lib/CMakeFiles/gnuradio-digital.dir/ofdm_cyclic_prefixer_impl.cc.o
-
-
 
 
 

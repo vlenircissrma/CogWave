@@ -27,7 +27,7 @@ To get help and to report bugs, post your message to the google group https://gr
 ![Applications Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/applications.jpg)
 ![High-Fidelity Simulation Screenshot](https://raw.github.com/vlenircissrma/CogWave/master/Screenshots/combination.jpg)
 
-INSTALLATION (Ubuntu 14.04 LTS)
+INSTALLATION (Ubuntu 15.04)
 ===============================
 
 1) IT++
@@ -46,13 +46,13 @@ sudo apt-get install libqwt5-qt4-dev
 
 sudo apt-get install libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev gstreamer0.10-plugins-ugly
 
-5) UHD
+5) UHD - HackRF
 
-https://github.com/EttusResearch/uhd
+sudo apt-get install libuhd-dev libhackrf-dev
 
-6) Gnu Radio > 3.7
+6) Gnu Radio
 
-https://github.com/gnuradio/gnuradio
+sudo apt-get install gnuradio-dev
 
 7) Open CogWave.pro (modify directories according to your installation path) in QtCreator and launch the Application !
 
