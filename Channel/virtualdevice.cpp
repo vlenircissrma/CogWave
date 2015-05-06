@@ -9,7 +9,6 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "virtualdevice.h"
 
 
@@ -46,6 +45,8 @@ VirtualDevice::VirtualDevice()
 
     my_address=0;
     channel_model->distance=mat("0.01");
+
+    //time_vector.set_capacity(50);
 
 
 }
@@ -275,6 +276,7 @@ void VirtualDevice::send(cvec tx_buff){
     //wait until next slot but allow some time to compute the channel of next transmission
     while(time()<tx_timestamp2-tx_buff.size()/tx_rate/2) 0;
 
+
 }
 
 cvec VirtualDevice::recv(int rx_size){
@@ -288,6 +290,7 @@ cvec VirtualDevice::recv(int rx_size){
     int i=0;
     mutex2.lock();
     vector<timestamp_data> time_vector2=time_vector;
+    //boost::circular_buffer<timestamp_data> time_vector2=time_vector;
     while(i<time_vector2.size()){
         src_address=time_vector2[i].src_address;
         tx_timestamp=time_vector2[i].vector_timestamp;
@@ -319,8 +322,9 @@ cvec VirtualDevice::recv(int rx_size){
     }
     time_vector=time_vector2;
     mutex2.unlock();
-    rx_timestamp=rx_timestamp+rx_size/rx_rate;
+    while(rx_timestamp<time()) rx_timestamp=rx_timestamp+rx_size/rx_rate;
     while(time()<rx_timestamp) 0;
+
     return received_vector;
 
 }
@@ -336,6 +340,7 @@ cvec VirtualDevice::recv(int rx_size, double rx_timestamp){
     int i=0;
     mutex2.lock();
     vector<timestamp_data> time_vector2=time_vector;
+    //boost::circular_buffer<timestamp_data> time_vector2=time_vector;
     while(i<time_vector2.size()){
         src_address=time_vector2[i].src_address;
         tx_timestamp=time_vector2[i].vector_timestamp;
@@ -367,7 +372,9 @@ cvec VirtualDevice::recv(int rx_size, double rx_timestamp){
     }
     time_vector=time_vector2;
     mutex2.unlock();
+    while(rx_timestamp<time()) rx_timestamp=rx_timestamp+rx_size/rx_rate;
     while(time()<rx_timestamp+rx_size/rx_rate) 0;
     return received_vector;
+
 
 }

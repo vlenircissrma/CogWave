@@ -12,7 +12,7 @@
 
 #ifndef VIRTUALDEVICE_H
 #define VIRTUALDEVICE_H
-#define VIRTUAL_ENABLED 0
+#define VIRTUAL_ENABLED 1
 #include <uhd/usrp/multi_usrp.hpp>
 #include <itpp/itcomm.h>
 #include <itpp/itstat.h>
@@ -22,6 +22,7 @@ using namespace itpp;
 #include <QElapsedTimer>
 #include <Channel/channel_models.h>
 #include <QMutex>
+#include <boost/circular_buffer.hpp>
 
 class VirtualDevice : public QThread
 {
@@ -82,6 +83,7 @@ public slots:
 private:
     double timeout;
     vector<timestamp_data> time_vector;
+    //boost::circular_buffer<timestamp_data> time_vector;
     double rx_timestamp;
     double tx_timestamp2;
 
