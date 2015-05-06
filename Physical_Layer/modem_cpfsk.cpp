@@ -21,6 +21,8 @@ Modem_CPFSK::Modem_CPFSK()
     vec rectangular_response=generate_rectangular_taps(OF,L);
     upsampled_shaper.set_pulse_shape(rectangular_response,OF);
 
+    //CREATE TOP BLOCK
+    tb = gr::make_top_block("modem_cpfsk");
 }
 
 
@@ -86,19 +88,16 @@ bvec Modem_CPFSK::demodulate(cvec rx_buff, vec &out)
     }*/
 
 
-    //CREATE TOP BLOCK
-    tb = gr::make_top_block("modem_cpfsk");
-
-    /*//FIRST SYNC: M&M
+    //FIRST SYNC: M&M
     float mu=0.5;
     float gain_mu=0.0;
     float omega=OF;
     float gain_omega=0.25*gain_mu*gain_mu;
     float omega_rel=0.005;
     gr::digital::clock_recovery_mm_ff::sptr clock_mm;
-    clock_mm=gr::digital::clock_recovery_mm_ff::make(omega,gain_omega,mu,gain_mu,omega_rel);*/
+    clock_mm=gr::digital::clock_recovery_mm_ff::make(omega,gain_omega,mu,gain_mu,omega_rel);
 
-    //SECOND SYNC : PFB SYNC
+    /*//SECOND SYNC : PFB SYNC
     vec cpfsk_response=upsampled_shaper.get_pulse_shape();
     int cpfsk_response_size=cpfsk_response.size();
     std::vector<float> taps(cpfsk_response_size);
@@ -106,38 +105,45 @@ bvec Modem_CPFSK::demodulate(cvec rx_buff, vec &out)
         taps[i]=cpfsk_response[i];
     }
     gr::digital::pfb_clock_sync_fff::sptr clock_pfb;
-    clock_pfb=gr::digital::pfb_clock_sync_fff::make(OF,1.0,taps);
+    clock_pfb=gr::digital::pfb_clock_sync_fff::make(OF,1.0,taps);*/
 
     //INJECTOR DEMODULATOR
+    injector_float_sptr injector_demodulator;
     injector_demodulator=make_injector_float();
 
     //SNIFFER DEMODULATOR
+    sniffer_float_sptr sniffer_demodulator;
     sniffer_demodulator=make_sniffer_float();
     sniffer_demodulator->set_buffer_size(nb_bits);
 
-    /*//CONNECT FIRST SYNC
+    //CONNECT FIRST SYNC
     tb->connect(injector_demodulator,0,clock_mm,0);
-    tb->connect(clock_mm,0,sniffer_demodulator,0);*/
+    tb->connect(clock_mm,0,sniffer_demodulator,0);
 
-    //CONNECT SECOND SYNC
+    /*//CONNECT SECOND SYNC
     tb->connect(injector_demodulator,0,clock_pfb,0);
-    tb->connect(clock_pfb,0,sniffer_demodulator,0);
+    tb->connect(clock_pfb,0,sniffer_demodulator,0);*/
 
     //START TOP BLOCK
     tb->start();
 
 
 
-    /*//FIRST SYNC: M&M
+    //FIRST SYNC: M&M
     fm_received_symbols=upsampled_shaper.shape_samples(fm_received_symbols);
+    injector_demodulator->set_samples(fm_received_symbols);
+    usleep(100000);
+    out=sniffer_demodulator->get_samples();
+
+    /*//SECOND SYNC : PFB SYNC
     injector_demodulator->set_samples(fm_received_symbols);
     usleep(100000);
     out=sniffer_demodulator->get_samples();*/
 
-    //SECOND SYNC : PFB SYNC
-    injector_demodulator->set_samples(fm_received_symbols);
-    usleep(100000);
-    out=sniffer_demodulator->get_samples();
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
 
     double normalization=sqrt(1./out.size())*itpp::norm(out);
     if(normalization!=0.0)
@@ -238,3 +244,4 @@ bvec Modem_CPFSK::charvec2bvec(vector<char> input){
        }
 return output;
 }
+

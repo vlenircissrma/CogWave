@@ -19,6 +19,8 @@ Modem_QPSK::Modem_QPSK()
     int filter_length=6;
     rrc.set_pulse_shape(roll_off,filter_length,OF);
 
+    //CREATE TOP BLOCK
+    tb = gr::make_top_block("modem_qpsk");
 }
 
 vec Modem_QPSK::generate_rrc_taps(double gain,double sampling_freq,double symbol_rate,double alpha,int ntaps)
@@ -82,10 +84,8 @@ cvec Modem_QPSK::modulate(bvec data_packet)
     for(int i=0;i<rrc_response_size;i++)
         taps[i]=rrc_response[i];
 
-    //CREATE TOP BLOCK
-    tb = gr::make_top_block("modem_qpsk");
-
     //INJECTOR MODULATOR
+    injector_complex_sptr injector_modulator;
     injector_modulator=make_injector_complex();
 
     //PFB ARB RESAMPLER
@@ -93,6 +93,7 @@ cvec Modem_QPSK::modulate(bvec data_packet)
     pfb_arb=gr::filter::pfb_arb_resampler_ccf::make(OF,taps,32);
 
     //SNIFFER MODULATOR
+    sniffer_complex_sptr sniffer_modulator;
     sniffer_modulator=make_sniffer_complex();
     sniffer_modulator->set_buffer_size(nb_bits*OF);
 
@@ -108,6 +109,11 @@ cvec Modem_QPSK::modulate(bvec data_packet)
     injector_modulator->set_samples(mapped_transmitted_symbols);
     usleep(100000);
     cvec outvec=sniffer_modulator->get_samples();
+
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
 
     return outvec/sqrt(OF);*/
 
@@ -129,10 +135,9 @@ bvec Modem_QPSK::demodulate(cvec rx_buff, cvec &out)
         o++;
     }*/
 
-    //CREATE TOP BLOCK
-    tb = gr::make_top_block("modem_qpsk");
 
     //INJECTOR DEMODULATOR
+    injector_complex_sptr injector_demodulator;
     injector_demodulator=make_injector_complex();
 
     //FIRST RECEIVER: RRC + MPSK RECEIVER
@@ -172,6 +177,7 @@ bvec Modem_QPSK::demodulate(cvec rx_buff, cvec &out)
     qpsk_costas=gr::digital::costas_loop_cc::make(loop_bw,4);*/
 
     //SNIFFER DEMODULATOR
+    sniffer_complex_sptr sniffer_demodulator;
     sniffer_demodulator=make_sniffer_complex();
     sniffer_demodulator->set_buffer_size(nb_bits);
 
@@ -207,6 +213,10 @@ bvec Modem_QPSK::demodulate(cvec rx_buff, cvec &out)
     out=sniffer_demodulator->get_samples();
     out=elem_mult(out,ones(out.size())*exp(std::complex<double>(0,pi/4)));*/
 
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
 
     //QPSK Decision
     QPSK qpsk;

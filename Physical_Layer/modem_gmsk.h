@@ -37,8 +37,7 @@ public:
     MA_Filter<double,double,double> shaper;
     Pulse_Shape<double,double,double> upsampled_shaper;
     gr::top_block_sptr tb;
-    sniffer_float_sptr sniffer_demodulator;
-    injector_float_sptr injector_demodulator;
+
 };
 
 #endif // MODEM_GMSK_H

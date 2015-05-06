@@ -43,10 +43,7 @@ public:
     MA_Filter<double,double,double> shaper;
     Pulse_Shape<double,double,double> upsampled_shaper;
     gr::top_block_sptr tb;
-    sniffer_complex_sptr sniffer_modulator;
-    injector_complex_sptr injector_modulator;
-    sniffer_complex_sptr sniffer_demodulator;
-    injector_complex_sptr injector_demodulator;
+
 };
 
 #endif // MODEM_QPSK_H

@@ -19,6 +19,8 @@ Modem_BPSK::Modem_BPSK()
     int filter_length=6;
     rrc.set_pulse_shape(roll_off,filter_length,OF);
 
+    //CREATE TOP BLOCK
+    tb = gr::make_top_block("modem_bpsk");
 }
 
 
@@ -84,10 +86,8 @@ cvec Modem_BPSK::modulate(bvec data_packet)
     for(int i=0;i<rrc_response_size;i++)
         taps[i]=rrc_response[i];
 
-    //CREATE TOP BLOCK
-    tb = gr::make_top_block("modem_bpsk");
-
     //INJECTOR MODULATOR
+    injector_complex_sptr injector_modulator;
     injector_modulator=make_injector_complex();
 
     //PFB ARB RESAMPLER
@@ -95,6 +95,7 @@ cvec Modem_BPSK::modulate(bvec data_packet)
     pfb_arb=gr::filter::pfb_arb_resampler_ccf::make(OF,taps,32);
 
     //SNIFFER MODULATOR
+    sniffer_complex_sptr sniffer_modulator;
     sniffer_modulator=make_sniffer_complex();
     sniffer_modulator->set_buffer_size(nb_bits*OF);
 
@@ -110,6 +111,11 @@ cvec Modem_BPSK::modulate(bvec data_packet)
     injector_modulator->set_samples(to_cvec(mapped_transmitted_symbols));
     usleep(100000);
     cvec outvec=sniffer_modulator->get_samples();
+
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
 
     return outvec/sqrt(OF);*/
 
@@ -134,10 +140,9 @@ bvec Modem_BPSK::demodulate(cvec rx_buff, cvec &out)
         o++;
     }*/
 
-    //CREATE TOP BLOCK
-    tb = gr::make_top_block("modem_bpsk");
 
     //INJECTOR DEMODULATOR
+    injector_complex_sptr injector_demodulator;
     injector_demodulator=make_injector_complex();
 
 
@@ -179,6 +184,7 @@ bvec Modem_BPSK::demodulate(cvec rx_buff, cvec &out)
     bpsk_costas=gr::digital::costas_loop_cc::make(loop_bw,2);*/
 
     //SNIFFER DEMODULATOR
+    sniffer_complex_sptr sniffer_demodulator;
     sniffer_demodulator=make_sniffer_complex();
     sniffer_demodulator->set_buffer_size(nb_bits);
 
@@ -210,8 +216,10 @@ bvec Modem_BPSK::demodulate(cvec rx_buff, cvec &out)
     usleep(100000);
     out=sniffer_demodulator->get_samples();*/
 
-    //STOP TOP BLOCK
+    //STOP FLOWGRAPH
     tb->stop();
+    tb->wait();
+    tb->disconnect_all();
 
     //BPSK Decision
     BPSK bpsk;

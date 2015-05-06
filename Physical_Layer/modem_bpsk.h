@@ -39,10 +39,7 @@ public:
     double roll_off;
     Root_Raised_Cosine<double> rrc;
     gr::top_block_sptr tb;
-    sniffer_complex_sptr sniffer_modulator;
-    injector_complex_sptr injector_modulator;
-    sniffer_complex_sptr sniffer_demodulator;
-    injector_complex_sptr injector_demodulator;
+
 };
 
 #endif // MODEM_BPSK_H
