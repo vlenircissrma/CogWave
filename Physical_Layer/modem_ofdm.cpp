@@ -328,8 +328,6 @@ bvec Modem_OFDM::demodulate(cvec rx_buff, cvec &out)
     usleep(100000);
     out=sniffer_demodulator_complex->get_samples();
 
-    cout << "RX BUFF " << rx_buff.size() << endl;
-    cout << "OUT " << out.size() << endl;
     vector<unsigned char> received_char=sniffer_demodulator_char->get_samples();
 
     //STOP FLOWGRAPH
