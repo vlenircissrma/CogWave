@@ -64,17 +64,26 @@ Modem_OFDM::Modem_OFDM()
     sync_word1.zeros();
     sync_word2.zeros();
 
+    LFSR lfsr;
+    bvec polynomial("1 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 1");
+    lfsr.set_connections(polynomial);
+    bvec state("0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1");
+    lfsr.set_state(state);
+    bvec first_sync=lfsr.shift(active_carriers.size());
+    bvec second_sync=lfsr.shift(active_carriers.size());
+
     for(int i=0;i<active_carriers.size();i++){
         if((active_carriers[i]%2!=0)&&(find(active_carriers.begin(),active_carriers.end(),active_carriers[i])!=active_carriers.end())){
-            sync_word1[active_carriers[i]]=bpsk1[randi(0,1)];
+            sync_word1[active_carriers[i]]=bpsk1[first_sync[i]];
         }
         if(find(active_carriers.begin(),active_carriers.end(),active_carriers[i])!=active_carriers.end())
-            sync_word2[active_carriers[i]]=bpsk2[randi(0,1)];
+            sync_word2[active_carriers[i]]=bpsk2[second_sync[i]];
     }
 
 
     cvec fftshift_sync_word1=concat(sync_word1.get(sync_word1.size()/2,sync_word1.size()-1),sync_word1.get(0,sync_word1.size()/2-1));
     cvec fftshift_sync_word2=concat(sync_word2.get(sync_word2.size()/2,sync_word2.size()-1),sync_word2.get(0,sync_word2.size()/2-1));
+
 
     sync_words.resize(2);
     sync_words[0].resize(fft_len);
@@ -84,11 +93,25 @@ Modem_OFDM::Modem_OFDM()
         sync_words[1][i]=fftshift_sync_word2[i];
     }
 
+    //PAYLOAD HEADER
+    header_mod=gr::digital::constellation_bpsk::make();
+    payload_mod=gr::digital::constellation_qpsk::make();
+    Number_of_received_symbols=3*(fft_len+cp_len)+ceil(double(nb_bits)/payload_mod->bits_per_symbol()/occupied_carriers[0].size())*(fft_len+cp_len);
+    //PACKET HEADER OFDM
+    packet_header_ofdm=gr::digital::packet_header_ofdm::make(occupied_carriers,1,"packet_len","frame_len","packet_num",header_mod->bits_per_symbol(),payload_mod->bits_per_symbol(),false);
 
     //CREATE TOP BLOCK
     tb = gr::make_top_block("modem_ofdm");
 
+}
+
+cvec Modem_OFDM::modulate(bvec data_packet)
+{
+
+
+
     //INJECTOR MODULATOR
+    injector_char_sptr injector_modulator;
     injector_modulator=make_injector_char();
 
     //OFDM TAGGED STREAM
@@ -99,18 +122,10 @@ Modem_OFDM::Modem_OFDM()
     gr::digital::crc32_bb::sptr crc_mod;
     crc_mod=gr::digital::crc32_bb::make(false,"packet_len");
 
-    //PAYLOAD HEADER MODULATION
-    gr::digital::constellation_bpsk::sptr header_mod;
-    header_mod=gr::digital::constellation_bpsk::make();
-    gr::digital::constellation_qpsk::sptr payload_mod;
-    payload_mod=gr::digital::constellation_qpsk::make();
-
 
     //PACKET HEADER GENERATOR
-    gr::digital::packet_header_ofdm::sptr packet_header_ofdm;
-    packet_header_ofdm=gr::digital::packet_header_ofdm::make(occupied_carriers,1,"packet_len","frame_len","packet_num",header_mod->bits_per_symbol(),payload_mod->bits_per_symbol(),false);
     gr::digital::packet_headergenerator_bb::sptr packet_header_gen;
-    packet_header_gen=gr::digital::packet_headergenerator_bb::make(packet_header_ofdm->formatter(),"packet_len");
+    packet_header_gen=gr::digital::packet_headergenerator_bb::make(packet_header_ofdm->base(),"packet_len");
 
 
     //REPACK BITS
@@ -143,7 +158,7 @@ Modem_OFDM::Modem_OFDM()
     cyclic_prefixer=gr::digital::ofdm_cyclic_prefixer::make(fft_len,fft_len+cp_len,0,"packet_len");
 
     //SNIFFER MODULATOR
-    Number_of_received_symbols=3*(fft_len+cp_len)+ceil(double(nb_bits)/payload_mod->bits_per_symbol()/occupied_carriers1.size())*(fft_len+cp_len);
+    sniffer_complex_sptr sniffer_modulator;
     sniffer_modulator=make_sniffer_complex();
     sniffer_modulator->set_buffer_size(Number_of_received_symbols);
 
@@ -165,12 +180,37 @@ Modem_OFDM::Modem_OFDM()
     tb->connect(ifft_ofdm,0,cyclic_prefixer,0);
     tb->connect(cyclic_prefixer,0,sniffer_modulator,0);
 
+    //START FLOWGRAPH
+    tb->start();
+
+    vector<unsigned char> data_packet_char=bvec2charvec(data_packet);
+    injector_modulator->set_samples(data_packet_char);
+    usleep(100000);
+    cvec out=sniffer_modulator->get_samples();
+
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
+
+    double norm_factor=1./out.size()*sum(real(elem_mult(out,conj(out))));
+    out=1./sqrt(norm_factor)*out;
+    return out;
+}
+
+bvec Modem_OFDM::demodulate(cvec rx_buff, cvec &out)
+{
+
+
+
+
     //INJECTOR DEMODULATOR
+    injector_complex_sptr injector_demodulator;
     injector_demodulator=make_injector_complex();
 
     //OFDM SYNC DETECT
     gr::digital::ofdm_sync_sc_cfb::sptr sync_detect;
-    sync_detect=gr::digital::ofdm_sync_sc_cfb::make(fft_len,cp_len,false);
+    sync_detect=gr::digital::ofdm_sync_sc_cfb::make(fft_len,cp_len);
     gr::blocks::delay::sptr delay;
     delay=gr::blocks::delay::make(sizeof(gr_complex),fft_len+cp_len);
     gr::analog::frequency_modulator_fc::sptr oscillator;
@@ -184,6 +224,8 @@ Modem_OFDM::Modem_OFDM()
 
 
     //OFDM FFT
+    std::vector<float> window;
+    window.clear();
     gr::fft::fft_vcc::sptr header_fft;
     header_fft=gr::fft::fft_vcc::make(fft_len,true,window,true);
     gr::fft::fft_vcc::sptr payload_fft;
@@ -199,10 +241,11 @@ Modem_OFDM::Modem_OFDM()
     gr::digital::constellation_qpsk::sptr constellation;
     constellation=gr::digital::constellation_qpsk::make();
 
+
     gr::digital::ofdm_equalizer_simpledfe::sptr header_equalizer;
     header_equalizer=gr::digital::ofdm_equalizer_simpledfe::make(fft_len,header_mod->base(),occupied_carriers,pilot_carriers,pilot_symbols,0);
     gr::digital::ofdm_equalizer_simpledfe::sptr payload_equalizer;
-    payload_equalizer=gr::digital::ofdm_equalizer_simpledfe::make(fft_len,payload_mod->base(),occupied_carriers,pilot_carriers,pilot_symbols,1);
+    payload_equalizer=gr::digital::ofdm_equalizer_simpledfe::make(fft_len,payload_mod->base(),occupied_carriers,pilot_carriers,pilot_symbols,1,0.1);
 
     gr::digital::ofdm_frame_equalizer_vcvc::sptr header_frame;
     header_frame=gr::digital::ofdm_frame_equalizer_vcvc::make(header_equalizer->base(),cp_len,"frame_len",true,1);
@@ -225,7 +268,8 @@ Modem_OFDM::Modem_OFDM()
 
     //PACKET HEADER PARSER
     gr::digital::packet_headerparser_b::sptr header_parser;
-    header_parser=gr::digital::packet_headerparser_b::make(packet_header_ofdm->base());
+    header_parser=gr::digital::packet_headerparser_b::make(packet_header_ofdm->formatter());
+
     //REPACK BITS
     gr::blocks::repack_bits_bb::sptr payload_repack_demod;
     payload_repack_demod=gr::blocks::repack_bits_bb::make(payload_mod->bits_per_symbol(),8,"packet_len",true);
@@ -235,10 +279,12 @@ Modem_OFDM::Modem_OFDM()
     crc_demod=gr::digital::crc32_bb::make(true,"packet_len");
 
     //SNIFFER DEMODULATOR COMPLEX
+    sniffer_complex_sptr sniffer_demodulator_complex;
     sniffer_demodulator_complex=make_sniffer_complex();
     sniffer_demodulator_complex->set_buffer_size(nb_bits/payload_mod->bits_per_symbol());
 
     //SNIFFER DEMODULATOR CHAR
+    sniffer_char_sptr sniffer_demodulator_char;
     sniffer_demodulator_char=make_sniffer_char();
     sniffer_demodulator_char->set_buffer_size(nb_bits/8);
 
@@ -272,38 +318,28 @@ Modem_OFDM::Modem_OFDM()
     //tb->connect(payload_repack_demod,0,crc_demod,0);
     //tb->connect(crc_demod,0,sniffer_demodulator_char,0);
     tb->connect(payload_repack_demod,0,sniffer_demodulator_char,0);
-
     tb->connect(payload_serializer,0,sniffer_demodulator_complex,0);
     //START FLOWGRAPH
     tb->start();
 
-
-}
-
-cvec Modem_OFDM::modulate(bvec data_packet)
-{
-
-    double norm_factor;
-    vector<unsigned char> data_packet_char=bvec2charvec(data_packet);
-    injector_modulator->set_samples(data_packet_char);
-    usleep(100000);
-    cvec out=sniffer_modulator->get_samples();
-    norm_factor=1./out.size()*sum(real(elem_mult(out,conj(out))));
-    out=1./sqrt(norm_factor)*out;
-
-    return out;
-}
-
-bvec Modem_OFDM::demodulate(cvec rx_buff, cvec &out)
-{
 
     rx_buff=concat(rx_buff,zeros_c(fft_len+cp_len));
     injector_demodulator->set_samples(rx_buff);
     usleep(100000);
     out=sniffer_demodulator_complex->get_samples();
 
+    cout << "RX BUFF " << rx_buff.size() << endl;
+    cout << "OUT " << out.size() << endl;
     vector<unsigned char> received_char=sniffer_demodulator_char->get_samples();
+
+    //STOP FLOWGRAPH
+    tb->stop();
+    tb->wait();
+    tb->disconnect_all();
+    tb->msg_disconnect(header_parser,"header_data",header_payload_demux,"header_data");
+
     bvec received_bits=unsignedcharvec2bvec(received_char);
+
 
     return received_bits;
 }
