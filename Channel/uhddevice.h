@@ -12,7 +12,7 @@
 
 #ifndef UHDDEVICE_H
 #define UHDDEVICE_H
-#define UHD_ENABLED 1
+#define UHD_ENABLED 0
 #include <uhd/usrp/multi_usrp.hpp>
 #include <itpp/itcomm.h>
 #include <itpp/itstat.h>

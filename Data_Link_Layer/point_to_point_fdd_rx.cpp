@@ -64,16 +64,12 @@ Point_to_Point_FDD_RX::Point_to_Point_FDD_RX(Ui_MainWindow *ui, int fd_ext)
         waveform=5;
     if(gui->comboBox->currentText()=="L1:CPFSK")
         waveform=6;
-    if(gui->comboBox->currentText()=="L1:CORASMA")
-        waveform=7;
-    if(gui->comboBox->currentText()=="L1:NBWF")
-        waveform=8;
     if(gui->comboBox->currentText()=="L1:DSSS")
-        waveform=9;
+        waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
-        waveform=10;
+        waveform=8;
     if(gui->comboBox->currentText()=="L1:OFDM")
-        waveform=11;
+        waveform=9;
     last_waveform=0;
     detected_group=0;
     estimated_throughput=0;
@@ -191,29 +187,6 @@ void Point_to_Point_FDD_RX::run(){
         }
         if((last_waveform!=waveform)&&(waveform==7)){
             last_waveform=waveform;
-            corasma = new Modem_CORASMA();
-            Nfft=corasma->Nfft;
-            Ncp=corasma->Ncp;
-            bitspersymbol=corasma->bitspersymbol;
-            int nb_bits=corasma->nb_bits;
-            int nb_symbols=corasma->nb_symbols;
-            Number_of_received_symbols=nb_symbols;
-            packet = new Packet(nb_bits);
-            correction=0;
-            is_resynchronized=false;
-        }
-        if((last_waveform!=waveform)&&(waveform==8)){
-            last_waveform=waveform;
-            nbwf = new Modem_NBWF();
-            Nfft=nbwf->Nfft;
-            int nb_bits=nbwf->nb_bits;
-            Number_of_received_symbols=nbwf->nb_symbols;
-            packet = new Packet(nb_bits);
-            correction=0;
-            is_resynchronized=false;
-        }
-        if((last_waveform!=waveform)&&(waveform==9)){
-            last_waveform=waveform;
             dsss = new Modem_DSSS();
             int nb_bits=dsss->nb_bits;
             SF=dsss->SF;
@@ -223,7 +196,7 @@ void Point_to_Point_FDD_RX::run(){
             correction=0;
             is_resynchronized=false;
         }
-        if((last_waveform!=waveform)&&(waveform==10)){
+        if((last_waveform!=waveform)&&(waveform==8)){
             last_waveform=waveform;
             mcdads = new Modem_MCDADS();
             int nb_bits=mcdads->nb_bits;
@@ -240,7 +213,7 @@ void Point_to_Point_FDD_RX::run(){
             correction=0;
             is_resynchronized=false;
         }
-        if((last_waveform!=waveform)&&(waveform==11)){
+        if((last_waveform!=waveform)&&(waveform==9)){
             last_waveform=waveform;
             ofdm = new Modem_OFDM();
             int nb_bits=ofdm->nb_bits;
@@ -381,27 +354,17 @@ void Point_to_Point_FDD_RX::run(){
             }
             if(waveform==7){
                 cvec constellation;
-                received_bits=corasma->demodulate(rx_buff,constellation,time_offset_estimate);
-                emit plotted(constellation,2);
-                preamble_ok=corasma->preamble_detection(received_bits,received_bits2,preamble_start);
-            }
-            if(waveform==8){
-                received_bits=nbwf->demodulate(rx_buff,time_offset_estimate);
-                preamble_ok=nbwf->preamble_detection(received_bits,received_bits2,preamble_start);
-            }
-            if(waveform==9){
-                cvec constellation;
                 received_bits=dsss->demodulate(rx_buff,time_offset_estimate,constellation);
                 emit plotted(constellation,2);
                 preamble_ok=dsss->preamble_detection(received_bits,received_bits2,preamble_start);
             }
-            if(waveform==10){
+            if(waveform==8){
                 vec constellation;
                 received_bits=mcdads->demodulate(rx_buff,OF,ofdm_time_offset_estimate,dads_time_offset_estimate,constellation);
                 emit plotted(constellation,2);
                 preamble_ok=mcdads->preamble_detection(received_bits,received_bits2,preamble_start);
             }
-            if(waveform==11){
+            if(waveform==9){
                 cvec constellation;
                 received_bits=ofdm->demodulate(concat(previous_rx_buff,rx_buff),constellation);
                 emit plotted(constellation,2);
@@ -434,17 +397,9 @@ void Point_to_Point_FDD_RX::run(){
                     correction=Number_of_received_symbols+(preamble_start*OF-64*OF)/2;
                 if(waveform==6)
                     correction=Number_of_received_symbols+(preamble_start*OF-64*OF);
-                if(waveform==7){
-                    if(time_offset_estimate>Nfft-1)
-                        correction=Number_of_received_symbols+(time_offset_estimate-(Nfft+Ncp))+int(preamble_start/(Nfft/2*bitspersymbol))*2*(Nfft+Ncp);
-                    else
-                        correction=Number_of_received_symbols+(time_offset_estimate)+int(preamble_start/(Nfft/2*bitspersymbol))*2*(Nfft+Ncp);
-                }
-                if(waveform==8)
-                    correction=Number_of_received_symbols+(time_offset_estimate-2056);
-                if(waveform==9)
+                if(waveform==7)
                     correction=Number_of_received_symbols+(preamble_start*SF+time_offset_estimate-64*SF);
-                if(waveform==10){
+                if(waveform==8){
                     if(ofdm_time_offset_estimate>Nfft-1)
                         correction=Number_of_received_symbols+(ofdm_time_offset_estimate-(Nfft+Ncp))+int((preamble_start*SF+dads_time_offset_estimate-64*SF)/Nfft)*(Nfft+Ncp);
                     else

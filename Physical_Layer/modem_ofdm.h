@@ -74,13 +74,9 @@ private:
     std::vector<std::vector<gr_complex> > sync_words;
 
     gr::top_block_sptr tb;
-    sniffer_complex_sptr sniffer_modulator;
-    sniffer_complex_sptr sniffer_demodulator_complex;
-    sniffer_char_sptr sniffer_demodulator_char;
-    injector_char_sptr injector_modulator;
-    injector_complex_sptr injector_demodulator;
-
-
+    gr::digital::constellation_bpsk::sptr header_mod;
+    gr::digital::constellation_qpsk::sptr payload_mod;
+    gr::digital::packet_header_ofdm::sptr packet_header_ofdm;
 };
 
 #endif // MODEM_OFDM_H
