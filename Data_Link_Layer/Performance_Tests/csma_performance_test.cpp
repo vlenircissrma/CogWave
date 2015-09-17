@@ -29,7 +29,7 @@ CSMA_Performance_Test::CSMA_Performance_Test(Ui_MainWindow *ui)
         tun_i << "tun" << i;
         int fd_ext=tun_alloc((char*)(tun_i.str().c_str()));
         stringstream cmd;
-        cmd << "ifconfig" <<  tun_i.str() << "192.168.1.1 netmask 255.255.255.0 broadcast 192.168.1.255";
+        cmd << "ifconfig " <<  tun_i.str() << " 192.168.1." << i+1 << " netmask 255.255.255.0 broadcast 192.168.1.255";
         popen(cmd.str().c_str(),"r");
 
         CSMA_TX *tmp=new CSMA_TX(ui,fd_ext);
