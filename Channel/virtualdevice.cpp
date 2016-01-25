@@ -39,7 +39,7 @@ VirtualDevice::VirtualDevice()
     tx_timestamp=0;
     duplex_mode=1;
     rx_timestamp=0;
-    tx_timestamp2=10000*1.0e-6;
+    tx_timestamp2=100*1.0e-6;
     channel_model= new Channel_Models(rx_rate);
     awgn_noise.set_noise(1.0e-7);
 

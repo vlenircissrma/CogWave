@@ -22,15 +22,16 @@
 #include "Physical_Layer/modem_cpfsk.h"
 #include "Physical_Layer/modem_dsss.h"
 #include "Physical_Layer/modem_mcdads.h"
+#include "Physical_Layer/modem_ofdm.h"
 #include "Physical_Layer/sensing.h"
 #include "Data_Link_Layer/data_link_layer_rx.h"
-#include "Data_Link_Layer/packet.h"
+#include "Application_Layer/cogwave_packet.h"
 
 class  Point_to_Point_TDD_RX: public Data_Link_Layer_RX
 {
 Q_OBJECT
 public:
-    Point_to_Point_TDD_RX(Ui_MainWindow *ui, int fd_ext);
+    Point_to_Point_TDD_RX(Ui_MainWindow *ui);
     Modem_DADS *dads;
     Modem_MCDAAOFDM *mcdaaofdm;
     Modem_BPSK *bpsk;
@@ -39,7 +40,8 @@ public:
     Modem_CPFSK *cpfsk;
     Modem_DSSS *dsss;
     Modem_MCDADS *mcdads;
-    Packet *packet;
+    Modem_OFDM *ofdm;
+    CogWave_Packet *packet;
     Sensing *sensing;
     bool stop_signal;
     bool noderunning;
@@ -52,7 +54,8 @@ public:
     int myaddress;
     int destaddress;
     double time_gap;
-
+    double timestamp;
+    bool first_tx_timestamp;
 
 public slots:
     void update_uhd();
@@ -84,8 +87,6 @@ private:
     bvec received_bits;
     bvec received_bits2;
     double correction;
-    double timestamp;
-    bool first_tx_timestamp;
     bool is_time_set;
     int waveform;
     int last_waveform;

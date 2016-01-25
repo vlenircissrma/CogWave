@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "tdma_tdd_rx.h"
 
-TDMA_TDD_RX::TDMA_TDD_RX(Ui_MainWindow *ui, int fd_ext)
+TDMA_TDD_RX::TDMA_TDD_RX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -68,6 +68,8 @@ TDMA_TDD_RX::TDMA_TDD_RX(Ui_MainWindow *ui, int fd_ext)
         waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
         waveform=8;
+    if(gui->comboBox->currentText()=="L1:OFDM")
+        waveform=9;
     last_waveform=0;
     detected_group=0;
     estimated_throughput=0;
@@ -76,7 +78,7 @@ TDMA_TDD_RX::TDMA_TDD_RX(Ui_MainWindow *ui, int fd_ext)
     Nfft=512;
     previous_packet_number=0;
     tdma_slots=8;
-    ptr=fd_ext;
+
 }
 
 void TDMA_TDD_RX::update_uhd(){
@@ -140,7 +142,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -161,7 +163,7 @@ void TDMA_TDD_RX::run(){
             correction=0;
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(Nfft*Number_of_OFDM_symbols);
+            packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
             is_resynchronized=false;
 
 
@@ -175,7 +177,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -188,7 +190,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -201,7 +203,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -214,7 +216,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -228,7 +230,7 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -248,7 +250,22 @@ void TDMA_TDD_RX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
+            correction=0;
+            is_resynchronized=false;
+        }
+        if((last_waveform!=waveform)&&(waveform==9)){
+            last_waveform=waveform;
+            ofdm = new Modem_OFDM();
+            int nb_bits=ofdm->nb_bits;
+            Nfft=ofdm->fft_len;
+            Ncp=ofdm->cp_len;
+            Number_of_received_symbols=ofdm->Number_of_received_symbols;
+            int number_of_slots=2;
+            time_gap=number_of_slots*(Number_of_received_symbols/rxrate);
+            cout << "TIME GAP RX " << time_gap << endl;
+            device->time_gap=time_gap;
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -440,6 +457,12 @@ void TDMA_TDD_RX::run(){
                 emit plotted(constellation,2);
                 preamble_ok=mcdads->preamble_detection(received_bits,received_bits2,preamble_start);
             }
+            if(waveform==9){
+                cvec constellation;
+                received_bits=ofdm->demodulate(concat(previous_rx_buff,rx_buff),constellation);
+                emit plotted(constellation,2);
+                preamble_ok=ofdm->preamble_detection(received_bits,received_bits2,preamble_start);
+            }
             //cout << "PREAMBLE START " << preamble_start << endl;
             //cout << "TIME OFFSET ESTIMATE " << mcdaaofdm->time_offset_estimate << endl;
             //cout << "TIME OFFSET ESTIMATE " << time_offset_estimate << endl;
@@ -509,13 +532,11 @@ void TDMA_TDD_RX::run(){
                             else
                                 correction=(ofdm_time_offset_estimate)/rxrate+int((preamble_start*SF+dads_time_offset_estimate-64*SF)/Nfft)*(Nfft+Ncp)/rxrate;
                         }
-
-
                         emit valuechanged(correction);
 
                 }
                 bool same_packet=false;
-                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
                 if(packet_ok==true){
                     if(previous_packet_number+100<packet->packetnorx){
                         emit valuechanged(is_time_set,(device->rx_md.time_spec).get_real_secs()+correction);
@@ -553,7 +574,6 @@ void TDMA_TDD_RX::run(){
                         }
                     }
 
-
                 }
                 else{
 
@@ -567,13 +587,12 @@ void TDMA_TDD_RX::run(){
                     }
 
                 }
+                cout << " : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
 
             }
             else{
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
-
-                cout << "SOF NOT FOUND" << endl;
 
                 if(waveform==2){
                     //Transfer the best group to TX
@@ -587,6 +606,8 @@ void TDMA_TDD_RX::run(){
                         previous_time=current_time;
                     }
                 }
+                cout << myaddress << " : SOF NOT FOUND : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
+
             }
             if((is_time_set)&&(gui->comboBox->currentText()=="WF1-WF2")&&(is_resynchronized)){
                 if((estimated_throughput<1000)&&(previous_estimated_throughput>estimated_throughput)){
@@ -602,7 +623,6 @@ void TDMA_TDD_RX::run(){
                     }*/
                 }
             }
-            cout << "Throughput: " << int(estimated_throughput/1000) << " kbps" << endl;
             qApp->processEvents();
         }
     }

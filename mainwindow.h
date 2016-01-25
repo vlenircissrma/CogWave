@@ -88,6 +88,8 @@ private slots:
     void on_comboBox_activated(const QString &arg1);
     void on_comboBox_2_activated(const QString &arg1);
 
+    void on_pushButton_6_clicked();
+
 private:
     Ui::MainWindow *ui;
     Video_TX *video_tx;
@@ -113,12 +115,13 @@ private:
     //MCCDM_BER_Test *mccdm_ber_test;
     //OFDM_BER_Test *ofdm_ber_test;
 
-    ALOHA_Performance_Test *aloha_performance_test;
-    CSMA_Performance_Test *csma_performance_test;
-    OFDMA_TDD_Performance_Test *ofdma_tdd_performance_test;
-    Point_to_Point_FDD_Performance_Test *point_to_point_fdd_performance_test;
-    Point_to_Point_TDD_Performance_Test *point_to_point_tdd_performance_test;
-    TDMA_TDD_Performance_Test *tdma_tdd_performance_test;
+
+    //ALOHA_Performance_Test *aloha_performance_test;
+    //CSMA_Performance_Test *csma_performance_test;
+    //OFDMA_TDD_Performance_Test *ofdma_tdd_performance_test;
+    //Point_to_Point_FDD_Performance_Test *point_to_point_fdd_performance_test;
+    //Point_to_Point_TDD_Performance_Test *point_to_point_tdd_performance_test;
+    //TDMA_TDD_Performance_Test *tdma_tdd_performance_test;
 
 };
 

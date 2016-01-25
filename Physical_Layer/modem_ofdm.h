@@ -60,6 +60,7 @@ public:
     vector<unsigned char> bvec2charvec(bvec input);
     bvec charvec2bvec(vector<char> input);
     bool preamble_detection(bvec received_bits,bvec &received_bits2,int &preamble_start);
+    bool ack_detection(bvec received_bits,bvec &received_bits2,int &preamble_start);
     int fft_len;
     int cp_len;
     int nb_bits;

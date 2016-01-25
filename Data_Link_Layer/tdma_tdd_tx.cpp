@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "tdma_tdd_tx.h"
 
-TDMA_TDD_TX::TDMA_TDD_TX(Ui_MainWindow *ui, int fd_ext)
+TDMA_TDD_TX::TDMA_TDD_TX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -67,11 +67,13 @@ TDMA_TDD_TX::TDMA_TDD_TX(Ui_MainWindow *ui, int fd_ext)
         waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
         waveform=8;
+    if(gui->comboBox->currentText()=="L1:OFDM")
+        waveform=9;
     last_waveform=0;
     tdma_slots=8;
     all_slots_allocated=false;
     index_slot=0;
-    ptr=fd_ext;
+
 }
 
 void TDMA_TDD_TX::setvalue(bool value, double value2){
@@ -151,7 +153,7 @@ void TDMA_TDD_TX::run(){
          time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
          cout << "TIME GAP TX " << time_gap << endl;
          device->time_gap=time_gap;
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==2)){
@@ -171,7 +173,7 @@ void TDMA_TDD_TX::run(){
          time_gap=tdma_slots*(Number_of_received_symbols/device->rx_rate);
          cout << "TIME GAP TX " << time_gap << endl;
          device->time_gap=time_gap;
-         packet = new Packet(Nfft*Number_of_OFDM_symbols);
+         packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
          tx_best_group=0;
 
         }
@@ -184,7 +186,7 @@ void TDMA_TDD_TX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==4)){
@@ -196,7 +198,7 @@ void TDMA_TDD_TX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==5)){
             last_waveform=waveform;
@@ -208,7 +210,7 @@ void TDMA_TDD_TX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==6)){
             last_waveform=waveform;
@@ -219,7 +221,7 @@ void TDMA_TDD_TX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==7)){
             last_waveform=waveform;
@@ -231,7 +233,7 @@ void TDMA_TDD_TX::run(){
             time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==8)){
@@ -250,8 +252,19 @@ void TDMA_TDD_TX::run(){
          time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
          cout << "TIME GAP TX " << time_gap << endl;
          device->time_gap=time_gap;
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
+        }
+        if((last_waveform!=waveform)&&(waveform==9)){
+            last_waveform=waveform;
+            ofdm = new Modem_OFDM();
+            int nb_bits=ofdm->nb_bits;
+            Number_of_received_symbols=ofdm->Number_of_received_symbols;
+            int number_of_slots=2;
+            time_gap=number_of_slots*(Number_of_received_symbols/rxrate);
+            cout << "TIME GAP TX " << time_gap << endl;
+            device->time_gap=time_gap;
+            packet = new CogWave_Packet(nb_bits);
         }
         if(state=="SEND"){
             //cout << "########### PROCESSING TX PACKET ########### " << device->time() << " #############" << endl;
@@ -259,7 +272,7 @@ void TDMA_TDD_TX::run(){
             //Solution to be sure to send the packet only in one slot. Be careful, not all slots will be filled
             //if there is not enough processing power to compute one packet in the time_gap period.
             if((previous_tx_timestamp!=tx_timestamp)&&(!all_slots_allocated)){
-                data_packet=packet->encode_packet(myaddress,destaddress,nb_read,ptr);
+                data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
                 if(nb_read>0){
                     previous_tx_timestamp=tx_timestamp;
                     if(last_waveform==1)
@@ -278,6 +291,8 @@ void TDMA_TDD_TX::run(){
                         tx_buff=dsss->modulate(data_packet);
                     if(last_waveform==8)
                         tx_buff=mcdads->modulate(data_packet);
+                    if(last_waveform==9)
+                        tx_buff=ofdm->modulate(data_packet);
                     if(is_time_set==false){
                         tx_timestamp=(int(device->time()/time_gap)+1)*time_gap+time_gap/2;
                         is_time_set=true;

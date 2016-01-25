@@ -22,15 +22,16 @@
 #include "Physical_Layer/modem_cpfsk.h"
 #include "Physical_Layer/modem_dsss.h"
 #include "Physical_Layer/modem_mcdads.h"
+#include "Physical_Layer/modem_ofdm.h"
 #include "Physical_Layer/sensing.h"
 #include "Data_Link_Layer/data_link_layer_tx.h"
-#include "Data_Link_Layer/packet.h"
+#include "Application_Layer/cogwave_packet.h"
 
 class Point_to_Point_TDD_TX: public Data_Link_Layer_TX
 {
 Q_OBJECT
 public:
-    Point_to_Point_TDD_TX(Ui_MainWindow *ui, int fd_ext);
+    Point_to_Point_TDD_TX(Ui_MainWindow *ui);
     Modem_DADS *dads;
     Modem_MCDAAOFDM *mcdaaofdm;
     Modem_BPSK *bpsk;
@@ -39,7 +40,8 @@ public:
     Modem_CPFSK *cpfsk;
     Modem_DSSS *dsss;
     Modem_MCDADS *mcdads;
-    Packet *packet;
+    Modem_OFDM *ofdm;
+    CogWave_Packet *packet;
     bool stop_signal;
     bool noderunning;
     QString state;
@@ -47,7 +49,8 @@ public:
     int destaddress;
     double time_gap;
     int Number_of_received_symbols;
-
+    bool is_time_set;
+    double tx_timestamp;
 
 public slots:
     void update_uhd();
@@ -76,9 +79,7 @@ private:
     cvec tx_buff;
     QString number;
     int nb_read;
-    double tx_timestamp;
     bool first_tx_timestamp;
-    bool is_time_set;
     int tx_best_group;
     int waveform;
     int last_waveform;

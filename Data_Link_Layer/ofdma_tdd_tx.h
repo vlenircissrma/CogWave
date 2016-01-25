@@ -17,15 +17,15 @@
 #include "Physical_Layer/modem_mcdaaofdm.h"
 #include "Physical_Layer/sensing.h"
 #include "Data_Link_Layer/data_link_layer_tx.h"
-#include "Data_Link_Layer/packet.h"
+#include "Application_Layer/cogwave_packet.h"
 
 class OFDMA_TDD_TX: public Data_Link_Layer_TX
 {
 Q_OBJECT
 public:
-    OFDMA_TDD_TX(Ui_MainWindow *ui, int fd_ext);
+    OFDMA_TDD_TX(Ui_MainWindow *ui);
     Modem_MCDAAOFDM *mcdaaofdm;
-    Packet *packet;
+    CogWave_Packet *packet;
     bool stop_signal;
     bool noderunning;
     QString state;

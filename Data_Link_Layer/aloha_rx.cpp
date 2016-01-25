@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "aloha_rx.h"
 
-ALOHA_RX::ALOHA_RX(Ui_MainWindow *ui, int fd_ext)
+ALOHA_RX::ALOHA_RX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -66,13 +66,14 @@ ALOHA_RX::ALOHA_RX(Ui_MainWindow *ui, int fd_ext)
         waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
         waveform=8;
+    if(gui->comboBox->currentText()=="L1:OFDM")
+        waveform=9;
     last_waveform=0;
     detected_group=0;
     estimated_throughput=0;
     previous_estimated_throughput=0;
     previous_time=0;
     Nfft=512;
-    ptr=fd_ext;
 
 }
 
@@ -119,7 +120,7 @@ void ALOHA_RX::run(){
             SF=dads->SF;
             OF=rxrate/txrate;
             Number_of_received_symbols=SF*nb_bits*OF+SF/*+dads->delay*/;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -137,7 +138,7 @@ void ALOHA_RX::run(){
             else
                 Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask)*(Nfft+Ncp);
             correction=0;
-            packet = new Packet(Nfft*Number_of_OFDM_symbols);
+            packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
             is_resynchronized=false;
 
 
@@ -148,7 +149,7 @@ void ALOHA_RX::run(){
             int nb_bits=bpsk->nb_bits;
             OF=bpsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -158,7 +159,7 @@ void ALOHA_RX::run(){
             int nb_bits=gmsk->nb_bits;
             OF=gmsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -168,7 +169,7 @@ void ALOHA_RX::run(){
             int nb_bits=qpsk->nb_bits;
             OF=qpsk->OF;
             Number_of_received_symbols=nb_bits*OF/2;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -178,7 +179,7 @@ void ALOHA_RX::run(){
             int nb_bits=cpfsk->nb_bits;
             OF=cpfsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -189,7 +190,7 @@ void ALOHA_RX::run(){
             SF=dsss->SF;
             OF=dsss->OF;
             Number_of_received_symbols=SF*nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -206,7 +207,18 @@ void ALOHA_RX::run(){
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask+1)*(Nfft+Ncp);
             else
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask)*(Nfft+Ncp);
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
+            correction=0;
+            is_resynchronized=false;
+        }
+        if((last_waveform!=waveform)&&(waveform==9)){
+            last_waveform=waveform;
+            ofdm = new Modem_OFDM();
+            int nb_bits=ofdm->nb_bits;
+            Nfft=ofdm->fft_len;
+            Ncp=ofdm->cp_len;
+            Number_of_received_symbols=ofdm->Number_of_received_symbols;
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -366,6 +378,13 @@ void ALOHA_RX::run(){
                 preamble_ok=mcdads->preamble_detection(received_bits,received_bits2,preamble_start);
                 ack_ok=mcdads->ack_detection(received_bits,received_bits3,ack_start);
             }
+            if(waveform==9){
+                cvec constellation;
+                received_bits=ofdm->demodulate(concat(previous_rx_buff,rx_buff),constellation);
+                emit plotted(constellation,2);
+                preamble_ok=ofdm->preamble_detection(received_bits,received_bits2,preamble_start);
+                ack_ok=ofdm->ack_detection(received_bits,received_bits3,ack_start);
+            }
             //cout << "PREAMBLE START " << preamble_start << endl;
             //cout << "TIME OFFSET ESTIMATE " << mcdaaofdm->time_offset_estimate << endl;
             //cout << "TIME OFFSET ESTIMATE " << time_offset_estimate << endl;
@@ -379,7 +398,7 @@ void ALOHA_RX::run(){
             if(preamble_ok==true){
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
-                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
             }
             if(ack_ok==true){
                 if((ack_address_ok)&&(((preamble_start<ack_start)&&(packet_ok))||((preamble_start<ack_start)&&(!packet_ok)))){
@@ -430,13 +449,11 @@ void ALOHA_RX::run(){
                     }
 
                 }
-
+                 cout << " : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
             }
             else{
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
-
-                cout << "SOF NOT FOUND" << endl;
 
                 if(is_resynchronized){
                     double current_time=device->time();
@@ -447,8 +464,9 @@ void ALOHA_RX::run(){
                     }
 
                 }
+                cout << myaddress << " : SOF NOT FOUND : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
+
             }
-            cout << myaddress <<" : Throughput " << int(estimated_throughput/1000) << " kbps" << endl;
             qApp->processEvents();
         }
     }

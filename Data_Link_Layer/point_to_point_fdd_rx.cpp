@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "point_to_point_fdd_rx.h"
 
-Point_to_Point_FDD_RX::Point_to_Point_FDD_RX(Ui_MainWindow *ui, int fd_ext)
+Point_to_Point_FDD_RX::Point_to_Point_FDD_RX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -75,8 +75,8 @@ Point_to_Point_FDD_RX::Point_to_Point_FDD_RX(Ui_MainWindow *ui, int fd_ext)
     estimated_throughput=0;
     previous_estimated_throughput=0;
     previous_time=0;
-    Nfft=64;
-    ptr=fd_ext;
+    Nfft=512;
+
 
 }
 
@@ -122,7 +122,7 @@ void Point_to_Point_FDD_RX::run(){
             SF=dads->SF;
             OF=rxrate/txrate;
             Number_of_received_symbols=SF*(nb_bits+1)*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -140,7 +140,7 @@ void Point_to_Point_FDD_RX::run(){
             else
                 Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask)*(Nfft+Ncp);
             correction=0;
-            packet = new Packet(Nfft*Number_of_OFDM_symbols);
+            packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
             is_resynchronized=false;
 
 
@@ -151,7 +151,7 @@ void Point_to_Point_FDD_RX::run(){
             int nb_bits=bpsk->nb_bits;
             OF=bpsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -161,7 +161,7 @@ void Point_to_Point_FDD_RX::run(){
             int nb_bits=gmsk->nb_bits;
             OF=gmsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -171,7 +171,7 @@ void Point_to_Point_FDD_RX::run(){
             int nb_bits=qpsk->nb_bits;
             OF=qpsk->OF;
             Number_of_received_symbols=nb_bits*OF/2;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -181,7 +181,7 @@ void Point_to_Point_FDD_RX::run(){
             int nb_bits=cpfsk->nb_bits;
             OF=cpfsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -192,7 +192,7 @@ void Point_to_Point_FDD_RX::run(){
             SF=dsss->SF;
             OF=dsss->OF;
             Number_of_received_symbols=SF*nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -209,7 +209,7 @@ void Point_to_Point_FDD_RX::run(){
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask+1)*(Nfft+Ncp);
             else
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask)*(Nfft+Ncp);
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -220,7 +220,7 @@ void Point_to_Point_FDD_RX::run(){
             Nfft=ofdm->fft_len;
             Ncp=ofdm->cp_len;
             Number_of_received_symbols=ofdm->Number_of_received_symbols;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -375,8 +375,8 @@ void Point_to_Point_FDD_RX::run(){
             //cout << "TIME OFFSET ESTIMATE " << time_offset_estimate << endl;
             //cout <<  ofdm_time_offset_estimate << endl;
             //cout << dads_time_offset_estimate << endl;
-
             if(preamble_ok==true){
+
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
@@ -407,9 +407,8 @@ void Point_to_Point_FDD_RX::run(){
                 }
                 emit valuechanged(correction);
 
-
                 bool same_packet=false;
-                bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
                 if(packet_ok==true){
                     if(is_resynchronized==false)
                              is_resynchronized=true;
@@ -451,13 +450,13 @@ void Point_to_Point_FDD_RX::run(){
 
 
                 }
+                 cout << " : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
 
             }
             else{
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
-                cout << "SOF NOT FOUND" << endl;
                 if(waveform==2){
                     //Transfer the best group to TX
                     emit valuechanged(rx_best_group);
@@ -471,8 +470,10 @@ void Point_to_Point_FDD_RX::run(){
                     }
 
                 }
+                cout << myaddress << " : SOF NOT FOUND : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
+
             }
-            cout << "Throughput: " << int(estimated_throughput/1000) << " kbps" << endl;
+
             qApp->processEvents();
         }
     }

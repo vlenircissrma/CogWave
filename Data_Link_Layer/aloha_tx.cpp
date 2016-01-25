@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "aloha_tx.h"
 
-ALOHA_TX::ALOHA_TX(Ui_MainWindow *ui, int fd_ext)
+ALOHA_TX::ALOHA_TX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -66,11 +66,13 @@ ALOHA_TX::ALOHA_TX(Ui_MainWindow *ui, int fd_ext)
         waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
         waveform=8;
+    if(gui->comboBox->currentText()=="L1:OFDM")
+        waveform=9;
     last_waveform=0;
     ack_notx=-1;
     ack_norx=-1;
     ack_sent=1;
-    ptr=fd_ext;
+
 }
 
 void ALOHA_TX::update_uhd(){
@@ -114,6 +116,8 @@ void ALOHA_TX::sendack(){
         tx_buff=dsss->modulate(data_packet);
     if(waveform==8)
         tx_buff=mcdads->modulate(data_packet);
+    if(waveform==9)
+        tx_buff=ofdm->modulate(data_packet);
     //cout << "SEND ACK" << endl;
     device->sendsamplesnow(tx_buff*device->tx_amplitude);
 
@@ -157,7 +161,7 @@ void ALOHA_TX::run(){
          int SF=dads->SF;
          int OF=rxrate/txrate;
          Number_of_received_symbols=SF*nb_bits*OF+SF;
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==2)){
@@ -174,7 +178,7 @@ void ALOHA_TX::run(){
              Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask+1)*(Nfft+Ncp);
          else
              Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask)*(Nfft+Ncp);
-         packet = new Packet(Nfft*Number_of_OFDM_symbols);
+         packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
          tx_best_group=0;
 
         }
@@ -184,7 +188,7 @@ void ALOHA_TX::run(){
             int nb_bits=bpsk->nb_bits;
             int OF=bpsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==4)){
@@ -193,7 +197,7 @@ void ALOHA_TX::run(){
             int nb_bits=gmsk->nb_bits;
             int OF=gmsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==5)){
             last_waveform=waveform;
@@ -201,7 +205,7 @@ void ALOHA_TX::run(){
             int nb_bits=qpsk->nb_bits;
             int OF=qpsk->OF;
             Number_of_received_symbols=nb_bits*OF/2;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==6)){
             last_waveform=waveform;
@@ -209,7 +213,7 @@ void ALOHA_TX::run(){
             int nb_bits=cpfsk->nb_bits;
             int OF=cpfsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==7)){
             last_waveform=waveform;
@@ -218,7 +222,7 @@ void ALOHA_TX::run(){
             int SF=dsss->SF;
             int OF=dsss->OF;
             Number_of_received_symbols=SF*nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==8)){
          last_waveform=waveform;
@@ -233,8 +237,15 @@ void ALOHA_TX::run(){
              Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask+1)*(Nfft+Ncp);
          else
              Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask)*(Nfft+Ncp);
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
+        }
+        if((last_waveform!=waveform)&&(waveform==9)){
+            last_waveform=waveform;
+            ofdm = new Modem_OFDM();
+            int nb_bits=ofdm->nb_bits;
+            Number_of_received_symbols=ofdm->Number_of_received_symbols;
+            packet = new CogWave_Packet(nb_bits);
         }
         if(state=="SEND"){
             //cout << "########### PROCESSING TX PACKET ########### " << device->time() << " #############" << endl;
@@ -242,7 +253,7 @@ void ALOHA_TX::run(){
             //Solution which send the packet in every slot until the packet gets updated.
 
 
-                data_packet=packet->encode_packet(myaddress,destaddress,nb_read,ptr);
+                data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
                 if(nb_read>0){
                     if(last_waveform==1)
                         tx_buff=dads->modulate(data_packet);
@@ -260,6 +271,8 @@ void ALOHA_TX::run(){
                         tx_buff=dsss->modulate(data_packet);
                     if(last_waveform==8)
                         tx_buff=mcdads->modulate(data_packet);
+                    if(last_waveform==9)
+                        tx_buff=ofdm->modulate(data_packet);
                     //wait a random time before transmitting (exponential backoff)
                     device->waiting_time(tx_buff.size()/txrate*randi(0,pow(2,nb_retransmissions)-1));
                     //start time of the timeout

@@ -25,13 +25,13 @@
 #include "Physical_Layer/modem_ofdm.h"
 #include "Physical_Layer/sensing.h"
 #include "Data_Link_Layer/data_link_layer_tx.h"
-#include "Data_Link_Layer/packet.h"
+#include "Application_Layer/cogwave_packet.h"
 
 class Point_to_Point_FDD_TX: public Data_Link_Layer_TX
 {
 Q_OBJECT
 public:
-    Point_to_Point_FDD_TX(Ui_MainWindow *ui, int fd_ext);
+    Point_to_Point_FDD_TX(Ui_MainWindow *ui);
     Modem_DADS *dads;
     Modem_MCDAAOFDM *mcdaaofdm;
     Modem_BPSK *bpsk;
@@ -41,7 +41,7 @@ public:
     Modem_DSSS *dsss;
     Modem_MCDADS *mcdads;
     Modem_OFDM *ofdm;
-    Packet *packet;
+    CogWave_Packet *packet;
     bool stop_signal;
     bool noderunning;
     QString state;

@@ -22,15 +22,16 @@
 #include "Physical_Layer/modem_cpfsk.h"
 #include "Physical_Layer/modem_dsss.h"
 #include "Physical_Layer/modem_mcdads.h"
+#include "Physical_Layer/modem_ofdm.h"
 #include "Physical_Layer/sensing.h"
 #include "Data_Link_Layer/data_link_layer_rx.h"
-#include "Data_Link_Layer/packet.h"
+#include "Application_Layer/cogwave_packet.h"
 
 class  CSMA_RX: public Data_Link_Layer_RX
 {
 Q_OBJECT
 public:
-    CSMA_RX(Ui_MainWindow *ui, int fd_ext);
+    CSMA_RX(Ui_MainWindow *ui);
     Modem_DADS *dads;
     Modem_MCDAAOFDM *mcdaaofdm;
     Modem_BPSK *bpsk;
@@ -39,7 +40,8 @@ public:
     Modem_CPFSK *cpfsk;
     Modem_DSSS *dsss;
     Modem_MCDADS *mcdads;
-    Packet *packet;
+    Modem_OFDM *ofdm;
+    CogWave_Packet *packet;
     Sensing *sensing;
     bool stop_signal;
     bool noderunning;

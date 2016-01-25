@@ -19,7 +19,6 @@ SOURCES += main.cpp\
     Application_Layer/text_tx.cpp \
     Application_Layer/text_rx.cpp \
     Application_Layer/plot.cpp \
-    Data_Link_Layer/packet.cpp \
     Data_Link_Layer/point_to_point_tdd_rx.cpp \
     Data_Link_Layer/point_to_point_tdd_tx.cpp \
     Data_Link_Layer/point_to_point_fdd_rx.cpp \
@@ -70,7 +69,8 @@ SOURCES += main.cpp\
     Physical_Layer/injector_float.cpp \
     Physical_Layer/sniffer_char.cpp \
     Physical_Layer/injector_char.cpp \
-    Channel/hackrfdevice.cpp
+    Channel/hackrfdevice.cpp \
+    Application_Layer/cogwave_packet.cpp
 
 
 
@@ -84,7 +84,6 @@ HEADERS  += mainwindow.h \
     Application_Layer/text_tx.h \
     Application_Layer/text_rx.h \
     Application_Layer/plot.h \
-    Data_Link_Layer/packet.h \
     Data_Link_Layer/data_link_layer_rx.h \
     Data_Link_Layer/data_link_layer_tx.h \
     Data_Link_Layer/point_to_point_tdd_rx.h \
@@ -137,7 +136,8 @@ HEADERS  += mainwindow.h \
     Physical_Layer/injector_float.h \
     Physical_Layer/sniffer_char.h \
     Physical_Layer/injector_char.h \
-    Channel/hackrfdevice.h
+    Channel/hackrfdevice.h \
+    Application_Layer/cogwave_packet.h
 
 
 FORMS    += mainwindow.ui
@@ -171,6 +171,8 @@ CONFIG += link_pkgconfig
 PKGCONFIG += gnuradio-digital gnuradio-filter gnuradio-blocks gnuradio-fft gnuradio-runtime gnuradio-analog
 LIBS += -lboost_system -lfftw3f
 LIBS += -lhackrf
+
+
 
 
 

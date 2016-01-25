@@ -33,9 +33,9 @@ int sniffer_complex::work(int noutput_items,
     const gr_complex *in = (const gr_complex *)input_items[0];
 
     (void) output_items;
-
     boost::mutex::scoped_lock lock(d_mutex);
     i=0;
+
     while((count<d_buffer.capacity())&&(i<noutput_items)){
         d_buffer.push_back(in[i]);
         count++;
@@ -56,14 +56,13 @@ cvec sniffer_complex::get_samples()
     boost::mutex::scoped_lock lock(d_mutex);
 
     int num = d_buffer.size();
-    //cout << num << endl;
-    //cout << d_buffer.capacity() << endl;
     cvec out;
     out.set_size(num);
     for(int i=0;i<num;i++)
         out[i]=d_buffer[i];
     d_buffer.clear();
     count=0;
+
 
     return out;
 }

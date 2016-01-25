@@ -10,7 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "packet.h"
+#include "cogwave_packet.h"
 #include "fstream"
 
 union conversion {
@@ -25,10 +25,11 @@ union conversion {
 };
 
 
-Packet::Packet(int nb_bits){
+CogWave_Packet::CogWave_Packet(int nb_bits){
 
     is_ber_count=false;
     packet_size=nb_bits;
+    is_ip=false;
 
     int status;
     status=mkfifo("video_inputpipe",0666);
@@ -107,21 +108,21 @@ Packet::Packet(int nb_bits){
 
 }
 
-void Packet::restart_video(){
+void CogWave_Packet::restart_video(){
 
 
     close(fd_input_video);
     fd_input_video = open("video_inputpipe", O_RDONLY | O_NONBLOCK);
 
 }
-void Packet::restart_audio(){
+void CogWave_Packet::restart_audio(){
 
     close(fd_input_audio);
     fd_input_audio = open("audio_inputpipe", O_RDONLY | O_NONBLOCK);
 }
 
 
-void Packet::file_close(){
+void CogWave_Packet::file_close(){
 
 
 
@@ -134,7 +135,7 @@ void Packet::file_close(){
 
 }
 
-bvec Packet::encode_packet(int src_address,int dst_address, int &nb_read, int fd_ext)
+bvec CogWave_Packet::encode_packet(int src_address,int dst_address, int &nb_read)
 {
 
 
@@ -306,6 +307,7 @@ bvec Packet::encode_packet(int src_address,int dst_address, int &nb_read, int fd
       transmitted_bits_text.set_size(0);
     }
     bvec merge_transmitted_bits;
+    merge_transmitted_bits.set_size(0);
     if(((soi!=-1)&&(eoi!=-1))||((sot!=-1)&&(eot!=-1))||((som!=-1)&&(eom!=-1))){
         merge_transmitted_bits.set_size(transmitted_bits_text.size()+transmitted_bits_mp3.size()+transmitted_bits_jpeg.size());
         merge_transmitted_bits.replace_mid(0,transmitted_bits_text);
@@ -318,13 +320,18 @@ bvec Packet::encode_packet(int src_address,int dst_address, int &nb_read, int fd
         merge_transmitted_bits=fec->encode_packet(merge_transmitted_bits);
 
     }
-    else{
+    if(is_ip){
 
-        vector<char> buff((packet_size-28*8)/8/fec->rate);
-        nb_read=read(fd_ext, &buff.front(), buff.size());
+        vector<char> buff((packet_size-512)/8/fec->rate);
+        nb_read=read(ptr, &buff.front(), buff.size());
         if(nb_read>0){
             vector<char> buff2(buff.begin(),buff.begin()+nb_read);
              merge_transmitted_bits=charvec2bvec(buff2);
+             //CRC
+             CRC_Code crc(string("CRC-32"));
+             merge_transmitted_bits = crc.encode(merge_transmitted_bits);
+             //FEC
+             merge_transmitted_bits=fec->encode_packet(merge_transmitted_bits);
         }
         else{
             merge_transmitted_bits.set_size(0);
@@ -346,14 +353,14 @@ bvec Packet::encode_packet(int src_address,int dst_address, int &nb_read, int fd
 
     bvec information_bits=charvec2bvec(information);
     bvec delimiter_bits=charvec2bvec(delimiter);
-    if((64+information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()<data_packet.size())&&(merge_transmitted_bits.size()!=0)){
-        data_packet.replace_mid(64,information_bits);
-        data_packet.replace_mid(64+18*8,merge_transmitted_bits+scrambling.get(0,merge_transmitted_bits.size()-1));
-        data_packet.replace_mid(64+18*8+merge_transmitted_bits.size(),delimiter_bits);
+    if((information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()<=data_packet.size())&&(merge_transmitted_bits.size()!=0)){
+        data_packet.replace_mid(0,information_bits);
+        data_packet.replace_mid(18*8,merge_transmitted_bits+scrambling.get(0,merge_transmitted_bits.size()-1));
+        data_packet.replace_mid(18*8+merge_transmitted_bits.size(),delimiter_bits);
         packetnotx=packetnotx+1;
     }
     else{
-        if(64+information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()>data_packet.size()){
+        if(information_bits.size()+delimiter_bits.size()+merge_transmitted_bits.size()>data_packet.size()){
             cout << "WARNING !!! SLOT LENGTH TOO SMALL !!!" << endl;
         }
 
@@ -365,7 +372,7 @@ bvec Packet::encode_packet(int src_address,int dst_address, int &nb_read, int fd
 
 }
 
-bvec Packet::encode_ack(int packetnorx,int src_address,int dst_address)
+bvec CogWave_Packet::encode_ack(int packetnorx,int src_address,int dst_address)
 {
 
     int ack_size=packet_size;
@@ -400,11 +407,11 @@ bvec Packet::encode_ack(int packetnorx,int src_address,int dst_address)
 
     bvec information_bits=charvec2bvec(information);
 
-    if(64+information_bits.size()<data_packet.size()){
-        data_packet.replace_mid(64,information_bits);
+    if(information_bits.size()<data_packet.size()){
+        data_packet.replace_mid(0,information_bits);
     }
     else{
-        if(64+information_bits.size()>data_packet.size()){
+        if(information_bits.size()>data_packet.size()){
             cout << "WARNING !!! SLOT LENGTH TOO SMALL !!!" << endl;
         }
     }
@@ -414,12 +421,11 @@ bvec Packet::encode_ack(int packetnorx,int src_address,int dst_address)
 
 }
 
-bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet, int fd_ext)
+bool CogWave_Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet)
 {
 
     bool packet_ok=false;
     bool end_delimiter=false;
-
 
     vector<char> information=bvec2charvec(received_bits);
     conversion packetnoint;
@@ -432,7 +438,7 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
     //cout << t << endl;
 
     int i=0;
-    while((i<int(information.size())-18)&&(packet_ok==false)){
+    while((i<=int(information.size())-18)&&(packet_ok==false)){
         if((information[i]=='!')&&(information[i+1]=='!')&&(information[i+2]=='H')&&(information[i+15]=='!')&&(information[i+16]=='!')&&(information[i+17]=='H')){
             //cout << "PREAMBLE FOUND " << i << endl;
             src_address_int.intchar[0]=information[i+3];
@@ -457,11 +463,12 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
                 packetnoint.intchar[3]=information[i+14];
                 packetnorx=packetnoint.i;
 
-                int j=i+19;
-                while((j<int(information.size())-3)&&(end_delimiter==false)){
+
+                int j=i+18;
+                while((j<=int(information.size())-3)&&(end_delimiter==false)){
                     if((information[j]=='!')&&(information[j+1]=='!')&&(information[j+2]=='D')){
                         end_delimiter=true;
-                        //cout << "END DELIMITER FOUND !!!!!!!!!" << endl;
+                        //cout << "END DELIMITER FOUND " << j << endl;
                         vector<char> buff(j-(i+18));
                         for(int k=0;k<j-(i+18);k++)
                             buff[k]=information[i+18+k];
@@ -472,20 +479,26 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
                         //FEC
                         bvec encoded_bits=fec->decode_packet(merge_received_bits+scrambling.get(0,merge_received_bits.size()-1));
                         //cout << "SIZE FEC DECODED BITS " << encoded_bits.size() << endl;
+                        bool error;
+                        bvec decoded_bits;
+                        if(is_ber_count==false){
                         //CRC
                         CRC_Code crc(string("CRC-32"));
-                        bvec decoded_bits;
-                        bool error = crc.decode(encoded_bits,decoded_bits);
+                        error = crc.decode(encoded_bits,decoded_bits);
                         //cout << "SIZE CRC DECODED BITS " << decoded_bits.size() << endl;
-
+                        }
+                        else{
+                            error=true;
+                            decoded_bits=encoded_bits;
+                        }
                         if(error==false){
-                            cout << my_address << " : CRC KO - "<< src_address << "->" << dst_address << endl;
+                            cout << my_address << " : CRC KO - "<< src_address << "->" << dst_address;
                         }
                         else{
 
                           packet_ok=true;
                           if(packetnorx!=previous_packetnorx){
-                                cout << my_address << " : CRC OK - " << src_address << "->" << dst_address << " - Packet Number " << packetnorx << endl;
+                                cout << my_address << " : CRC OK - " << src_address << "->" << dst_address << " - PACKET NUMBER " << packetnorx;
                                 previous_packetnorx=packetnorx;
 
                             buff=bvec2charvec(decoded_bits);
@@ -635,14 +648,15 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
 
                                 }
                             }
-                            else{
+                            if(is_ip){
                                 //Write to an external application (OmNeT++,ns-3...)
-                                write(fd_ext,&buff.front(), buff.size());
+                                write(ptr,&buff.front(), buff.size());
                             }
 
                            }
                           else{
-                              cout << my_address << " : SAME PACKET - " << src_address << "->" << dst_address << endl;
+
+                              cout << my_address << " : SAME PACKET - " << src_address << "->" << dst_address << " - PACKET NUMBER " << packetnorx;
                               same_packet=true;
                           }
                         }
@@ -652,11 +666,11 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
                 j++;
                 }
                 if(end_delimiter==false){
-                    cout << my_address << " : EOF NOT FOUND - "<<  src_address << "->" << dst_address << endl;
+                    cout << my_address << " : EOF NOT FOUND - "<<  src_address << "->" << dst_address<< " - PACKET NUMBER " << packetnorx;
                 }
             }
             else{
-                cout << my_address << " : WRONG ADDRESS - "<<  src_address << "->" << dst_address << endl;
+                cout << my_address << " : WRONG ADDRESS - "<<  src_address << "->" << dst_address << " - PACKET NUMBER " << packetnorx;
             }
         }
 
@@ -667,8 +681,18 @@ bool Packet::decode_packet(bvec received_bits, int my_address, bool &same_packet
 
 }
 
+bool CogWave_Packet::is_preamble(bvec received_bits)
+{
+    bool preamble_ok=false;
+    vector<char> information=bvec2charvec(received_bits.get(0,23));
+    if((information[0]=='!')&&(information[1]=='!')&&(information[2]=='H')){
+        preamble_ok=true;
+    }
+    return preamble_ok;
 
-bool Packet::decode_ack(bvec received_bits,int &packet_number, int my_address)
+}
+
+bool CogWave_Packet::decode_ack(bvec received_bits,int &packet_number, int my_address)
 {
     bool ack_ok=false;
     int src_address;
@@ -706,7 +730,7 @@ bool Packet::decode_ack(bvec received_bits,int &packet_number, int my_address)
 }
 
 
-bvec Packet::charvec2bvec(vector<char> input){
+bvec CogWave_Packet::charvec2bvec(vector<char> input){
     int bitsize=sizeof(char)*8;
     bvec output(input.size()*bitsize);
     char bintemp;
@@ -722,7 +746,7 @@ bvec Packet::charvec2bvec(vector<char> input){
 return output;
 }
 
-vector<char> Packet::bvec2charvec(bvec input){
+vector<char> CogWave_Packet::bvec2charvec(bvec input){
 
     int bitsize=sizeof(char)*8;
     bvec bin_vector(bitsize);
@@ -741,7 +765,7 @@ vector<char> Packet::bvec2charvec(bvec input){
 return output;
 }
 
-double Packet::ber_count(bvec input){
+double CogWave_Packet::ber_count(bvec input){
 
 
     if(input.size()>160){

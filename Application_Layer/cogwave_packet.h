@@ -10,8 +10,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef PACKET_H
-#define PACKET_H
+#ifndef COGWAVE_PACKET_H
+#define COGWAVE_PACKET_H
 #include <itpp/itcomm.h>
 #include <itpp/itstat.h>
 using namespace std;
@@ -23,14 +23,15 @@ using namespace itpp;
 #include <QString>
 #include "Physical_Layer/fec.h"
 
-class Packet
+class CogWave_Packet
 {
 public:
-    Packet(int nb_bits);
-    bvec encode_packet(int src_address,int dst_address, int &nb_read, int fd_ext);
-    bool decode_packet(bvec received_bits, int my_adress, bool &same_packet, int fd_ext);
+    CogWave_Packet(int nb_bits);
+    bvec encode_packet(int src_address,int dst_address, int &nb_read);
+    bool decode_packet(bvec received_bits, int my_adress, bool &same_packet);
     bvec encode_ack(int packetnorx,int my_adress,int dest_adress);
     bool decode_ack(bvec received_bits,int &packet_number, int my_address);
+    bool is_preamble(bvec received_bits);
     bvec charvec2bvec(vector<char> input);
     vector<char> bvec2charvec(bvec input);
     double ber_count(bvec input);
@@ -42,6 +43,9 @@ public:
     long int total_nb_errors;
     int packetnorx;
     int packetnotx;
+    bool is_ip;
+    int ptr;
+
 private:
 
     int packet_size;
@@ -65,5 +69,4 @@ private:
 
     double error_rate;
 };
-#endif // PACKET_H
-
+#endif // COGWAVE_PACKET_H

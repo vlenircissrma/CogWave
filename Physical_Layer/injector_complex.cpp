@@ -43,7 +43,9 @@ int injector_complex::work(int noutput_items,
         noutput_items=i;
         count=0;
         d_buffer.clear();
+
     }
+
     return noutput_items;
 }
 
@@ -55,6 +57,5 @@ void injector_complex::set_samples(cvec in)
     d_buffer.resize(in.size());
     for(int i=0;i<in.size();i++)
         d_buffer[i]=in[i];
-
 }
 

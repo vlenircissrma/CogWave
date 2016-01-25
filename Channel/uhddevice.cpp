@@ -19,6 +19,7 @@ UHDDevice::UHDDevice()
     //Create the USRP
     string args="";
     usrp = uhd::usrp::multi_usrp::make(args);
+    //usrp->set_master_clock_rate(0.03e6);
     timeout=1.0;
     tx_rate=2.0e6;
     tx_freq=433.92e6;
@@ -26,7 +27,7 @@ UHDDevice::UHDDevice()
     tx_amplitude=0.1;
     rx_rate=2.0e6;
     rx_freq=433.92e6;
-    rx_gain=30;
+    rx_gain=20;
     uhd::stream_args_t stream_args("fc64"); //complex doubles
     //create a transmit streamer
     tx_stream = usrp->get_tx_stream(stream_args);
@@ -273,8 +274,8 @@ void UHDDevice::run(){
             tx_md.has_time_spec = false;
 
             while(is_sending){
-                   num_tx_samps=tx_stream->send(&tx_buff(0), tx_buff.size(), tx_md,tx_buff.size()/tx_rate);
-                   //cout << "Number of samples sent by the Tx streamer in loop " << num_tx_samps << endl;
+                   num_tx_samps=tx_stream->send(&tx_buff(0), tx_buff.size(), tx_md/*,tx_buff.size()/tx_rate*/);
+                   //cout << "Number of samples sent by the Tx streamer in loop " << num_tx_samps << "tx buff size " << tx_buff.size() << endl;
                    if(tx_buff2!=tx_buff){
                        tx_buff=tx_buff2;
                    }
@@ -313,8 +314,10 @@ void UHDDevice::run(){
                 }
 
                 num_rx_samps=rx_stream->recv(&rx_buff2(0), rx_buff2.size(), rx_md);
+                //cout << "Number of samples sent by the Rx streamer in loop " << num_rx_samps << endl;
+                mutex.lock();
                 rx_buff=rx_buff2;
-
+                mutex.unlock();
             }
             usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
 

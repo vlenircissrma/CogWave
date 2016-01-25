@@ -173,7 +173,7 @@ bool Modem_CPFSK::preamble_detection(bvec received_bits,bvec &received_bits2,int
     bool preamble_ok=false;
     int i=0;
     preamble_start=0;
-    while((i<int(received_bits.size())-144)&&(preamble_ok==false)){
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
         if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
             preamble_ok=true;
             received_bits2.set_size(received_bits.size()-i);
@@ -209,7 +209,7 @@ bool Modem_CPFSK::ack_detection(bvec received_bits,bvec &received_bits2,int &pre
     bool preamble_ok=false;
     int i=0;
     preamble_start=0;
-    while((i<int(received_bits.size())-144)&&(preamble_ok==false)){
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
         if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
             preamble_ok=true;
             received_bits2.set_size(received_bits.size()-i);

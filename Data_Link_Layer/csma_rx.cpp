@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "csma_rx.h"
 
-CSMA_RX::CSMA_RX(Ui_MainWindow *ui, int fd_ext)
+CSMA_RX::CSMA_RX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -66,13 +66,15 @@ CSMA_RX::CSMA_RX(Ui_MainWindow *ui, int fd_ext)
         waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
         waveform=8;
+    if(gui->comboBox->currentText()=="L1:OFDM")
+        waveform=9;
     last_waveform=0;
     detected_group=0;
     estimated_throughput=0;
     previous_estimated_throughput=0;
     previous_time=0;
     Nfft=512;
-    ptr=fd_ext;
+
 
 }
 
@@ -119,7 +121,7 @@ void CSMA_RX::run(){
             SF=dads->SF;
             OF=rxrate/txrate;
             Number_of_received_symbols=SF*nb_bits*OF+SF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -137,7 +139,7 @@ void CSMA_RX::run(){
             else
                 Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask)*(Nfft+Ncp);
             correction=0;
-            packet = new Packet(Nfft*Number_of_OFDM_symbols);
+            packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
             is_resynchronized=false;
 
 
@@ -148,7 +150,7 @@ void CSMA_RX::run(){
             int nb_bits=bpsk->nb_bits;
             OF=bpsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -158,7 +160,7 @@ void CSMA_RX::run(){
             int nb_bits=gmsk->nb_bits;
             OF=gmsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -168,7 +170,7 @@ void CSMA_RX::run(){
             int nb_bits=qpsk->nb_bits;
             OF=qpsk->OF;
             Number_of_received_symbols=nb_bits*OF/2;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -178,7 +180,7 @@ void CSMA_RX::run(){
             int nb_bits=cpfsk->nb_bits;
             OF=cpfsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -189,7 +191,7 @@ void CSMA_RX::run(){
             SF=dsss->SF;
             OF=dsss->OF;
             Number_of_received_symbols=SF*nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -206,7 +208,18 @@ void CSMA_RX::run(){
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask+1)*(Nfft+Ncp);
             else
                 Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask)*(Nfft+Ncp);
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
+            correction=0;
+            is_resynchronized=false;
+        }
+        if((last_waveform!=waveform)&&(waveform==9)){
+            last_waveform=waveform;
+            ofdm = new Modem_OFDM();
+            int nb_bits=ofdm->nb_bits;
+            Nfft=ofdm->fft_len;
+            Ncp=ofdm->cp_len;
+            Number_of_received_symbols=ofdm->Number_of_received_symbols;
+            packet = new CogWave_Packet(nb_bits);
             correction=0;
             is_resynchronized=false;
         }
@@ -362,6 +375,13 @@ void CSMA_RX::run(){
                 preamble_ok=mcdads->preamble_detection(received_bits,received_bits2,preamble_start);
                 ack_ok=mcdads->ack_detection(received_bits,received_bits3,ack_start);
             }
+            if(waveform==9){
+                cvec constellation;
+                received_bits=ofdm->demodulate(concat(previous_rx_buff,rx_buff),constellation);
+                emit plotted(constellation,2);
+                preamble_ok=ofdm->preamble_detection(received_bits,received_bits2,preamble_start);
+                ack_ok=ofdm->ack_detection(received_bits,received_bits3,ack_start);
+            }
             emit signal_detect(ack_ok||preamble_ok);
             //cout << "PREAMBLE START " << preamble_start << endl;
             //cout << "TIME OFFSET ESTIMATE " << mcdaaofdm->time_offset_estimate << endl;
@@ -376,7 +396,7 @@ void CSMA_RX::run(){
             if(preamble_ok==true){
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
-                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
             }
             if(ack_ok==true){
                 if((ack_address_ok)&&(((preamble_start<ack_start)&&(packet_ok))||(!packet_ok))){
@@ -427,13 +447,12 @@ void CSMA_RX::run(){
                         previous_time=current_time;
                     }
                 }
-
+                 cout << " : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
             }
             else{
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
-                cout << "SOF NOT FOUND" << endl;
 
                 if(is_resynchronized){
                     double current_time=device->time();
@@ -443,8 +462,8 @@ void CSMA_RX::run(){
                         previous_time=current_time;
                     }
                 }
+                cout << myaddress << " : SOF NOT FOUND : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
             }
-            cout << "Throughput: " << int(estimated_throughput/1000) << " kbps" << endl;
             qApp->processEvents();
         }
     }

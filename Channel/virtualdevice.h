@@ -12,7 +12,7 @@
 
 #ifndef VIRTUALDEVICE_H
 #define VIRTUALDEVICE_H
-#define VIRTUAL_ENABLED 1
+#define VIRTUAL_ENABLED 0
 #include <uhd/usrp/multi_usrp.hpp>
 #include <itpp/itcomm.h>
 #include <itpp/itstat.h>

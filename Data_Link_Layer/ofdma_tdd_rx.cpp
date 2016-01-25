@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "ofdma_tdd_rx.h"
 
-OFDMA_TDD_RX::OFDMA_TDD_RX(Ui_MainWindow *ui, int fd_ext)
+OFDMA_TDD_RX::OFDMA_TDD_RX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -60,7 +60,7 @@ OFDMA_TDD_RX::OFDMA_TDD_RX(Ui_MainWindow *ui, int fd_ext)
     previous_time=0;
     Nfft=512;
     previous_packet_number=0;
-    ptr=fd_ext;
+
 }
 
 void OFDMA_TDD_RX::update_uhd(){
@@ -126,7 +126,7 @@ void OFDMA_TDD_RX::run(){
             correction=0;
             cout << "TIME GAP RX " << time_gap << endl;
             device->time_gap=time_gap;
-            packet = new Packet(Nfft*Number_of_OFDM_symbols);
+            packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
             is_resynchronized=false;
 
 
@@ -204,7 +204,7 @@ void OFDMA_TDD_RX::run(){
                         received_bits=mcdaaofdm->demodulate_mask_gray_qpsk(demodulated_ofdm_symbols,i,constellation);
                         preamble_ok=mcdaaofdm->preamble_detection_qpsk(received_bits,received_bits2,preamble_start);
                         bool same_packet=false;
-                        bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                        bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
                         if(preamble_ok==true)
                             subchannel_preamble_vector[i]=1;
                         else
@@ -289,7 +289,7 @@ void OFDMA_TDD_RX::run(){
 
                 }
                 bool same_packet=false;
-                bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet,ptr);
+                bool packet_ok=packet->decode_packet(received_bits2,myaddress,same_packet);
                 if(packet_ok==true){
                     if(previous_packet_number+100<packet->packetnorx){
                         emit valuechanged(is_time_set,(device->rx_md.time_spec).get_real_secs()+correction);
@@ -341,13 +341,12 @@ void OFDMA_TDD_RX::run(){
                     }
 
                 }
-
+                 cout << " : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
             }
             else{
                 if(packet->is_ber_count==true)
                     gui->label_10->setText(number.setNum(packet->ber_count(received_bits2),'e',2));
 
-                cout << "SOF NOT FOUND" << endl;
 
                 if(waveform==2){
                     //Transfer the best group to TX
@@ -361,8 +360,9 @@ void OFDMA_TDD_RX::run(){
                         previous_time=current_time;
                     }
                 }
+                cout << myaddress << " : SOF NOT FOUND : Throughput : " << int(estimated_throughput/1000) << " kbps" << endl;
+
             }
-            cout << "Throughput: " << int(estimated_throughput/1000) << " kbps" << endl;
             qApp->processEvents();
         }
     }

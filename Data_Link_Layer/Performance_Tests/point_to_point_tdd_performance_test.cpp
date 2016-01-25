@@ -22,18 +22,18 @@ Point_to_Point_TDD_Performance_Test::Point_to_Point_TDD_Performance_Test(Ui_Main
 {
 
     number_transceivers=2;
-
+    ivec fd_ext;
+    fd_ext.set_size(number_transceivers);
     //create transceivers
     for(int i=0;i<number_transceivers;i++){
         stringstream tun_i;
         tun_i << "tun" << i;
-        int fd_ext=tun_alloc((char*)(tun_i.str().c_str()));
+        fd_ext[i]=tun_alloc((char*)(tun_i.str().c_str()));
         stringstream cmd;
         cmd << "ifconfig " <<  tun_i.str() << " 192.168.1." << i+1 << " netmask 255.255.255.0 broadcast 192.168.1.255";
         popen(cmd.str().c_str(),"r");
-
-        Point_to_Point_TDD_TX *tmp=new Point_to_Point_TDD_TX(ui,fd_ext);
-        Point_to_Point_TDD_RX *tmp2=new Point_to_Point_TDD_RX(ui,fd_ext);
+        Point_to_Point_TDD_TX *tmp=new Point_to_Point_TDD_TX(ui);
+        Point_to_Point_TDD_RX *tmp2=new Point_to_Point_TDD_RX(ui);
         transmitters.push_back(tmp);
         receivers.push_back(tmp2);
     }
@@ -92,15 +92,21 @@ Point_to_Point_TDD_Performance_Test::Point_to_Point_TDD_Performance_Test(Ui_Main
         transmitters[i]->start();
     }
 
+
     sleep(1);
     //Start BER test TX and RX
     for(int i=0;i<number_transceivers;i++){
-        transmitters[i]->packet->is_ber_count=true;
-        receivers[i]->packet->is_ber_count=true;
+        transmitters[i]->packet->ptr=fd_ext[i];
+        receivers[i]->packet->ptr=fd_ext[i];
+        transmitters[i]->is_time_set=true;
+        transmitters[i]->tx_timestamp=i*transmitters[i]->time_gap/2;
+        transmitters[i]->packet->is_ip=true;
+        receivers[i]->packet->is_ip=true;
         transmitters[i]->state="SEND";
     }
-    transmitters[1]->packet->is_ber_count=false;
-    transmitters[1]->state="NOSTATE";
+
+    //transmitters[1]->packet->is_ber_count=false;
+    //transmitters[1]->state="NOSTATE";
 
 
 }

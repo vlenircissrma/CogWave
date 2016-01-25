@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "ofdma_tdd_tx.h"
 
-OFDMA_TDD_TX::OFDMA_TDD_TX(Ui_MainWindow *ui, int fd_ext)
+OFDMA_TDD_TX::OFDMA_TDD_TX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -54,7 +54,7 @@ OFDMA_TDD_TX::OFDMA_TDD_TX(Ui_MainWindow *ui, int fd_ext)
     waveform=2;
     last_waveform=0;
     all_subchannels_allocated=false;
-    ptr=fd_ext;
+
 }
 
 void OFDMA_TDD_TX::setvalue(bool value, double value2){
@@ -138,7 +138,7 @@ void OFDMA_TDD_TX::run(){
          time_gap=number_of_slots*(Number_of_received_symbols/device->rx_rate);
          cout << "TIME GAP TX " << time_gap << endl;
          device->time_gap=time_gap;
-         packet = new Packet(Nfft*Number_of_OFDM_symbols);
+         packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
          tx_best_group=0;
 
         }
@@ -147,7 +147,7 @@ void OFDMA_TDD_TX::run(){
             //Solution to be sure to send the packet only in one slot. Be careful, not all slots will be filled
             //if there is not enough processing power to compute one packet in the time_gap period.
             if((previous_tx_timestamp!=tx_timestamp)&&(!all_subchannels_allocated)){
-                data_packet=packet->encode_packet(myaddress,destaddress,nb_read,ptr);
+                data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
                 if(nb_read>0){
                     previous_tx_timestamp=tx_timestamp;
                     if(last_waveform==2)

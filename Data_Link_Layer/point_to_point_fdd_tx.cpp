@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "point_to_point_fdd_tx.h"
 
-Point_to_Point_FDD_TX::Point_to_Point_FDD_TX(Ui_MainWindow *ui, int fd_ext)
+Point_to_Point_FDD_TX::Point_to_Point_FDD_TX(Ui_MainWindow *ui)
 {
 
     gui=ui;
@@ -69,7 +69,7 @@ Point_to_Point_FDD_TX::Point_to_Point_FDD_TX(Ui_MainWindow *ui, int fd_ext)
     if(gui->comboBox->currentText()=="L1:OFDM")
         waveform=9;
     last_waveform=0;
-    ptr=fd_ext;
+
 }
 
 void Point_to_Point_FDD_TX::setvalue(int value){
@@ -123,7 +123,7 @@ void Point_to_Point_FDD_TX::run(){
          int SF=dads->SF;
          int OF=rxrate/txrate;
          Number_of_received_symbols=SF*(nb_bits+1)*OF;
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==2)){
@@ -140,7 +140,7 @@ void Point_to_Point_FDD_TX::run(){
              Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask+1)*(Nfft+Ncp);
          else
              Number_of_received_symbols=(Number_of_OFDM_symbols*Nfft/sum_mask)*(Nfft+Ncp);
-         packet = new Packet(Nfft*Number_of_OFDM_symbols);
+         packet = new CogWave_Packet(Nfft*Number_of_OFDM_symbols);
          tx_best_group=0;
 
         }
@@ -150,7 +150,7 @@ void Point_to_Point_FDD_TX::run(){
             int nb_bits=bpsk->nb_bits;
             int OF=bpsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==4)){
@@ -159,7 +159,7 @@ void Point_to_Point_FDD_TX::run(){
             int nb_bits=gmsk->nb_bits;
             int OF=gmsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==5)){
             last_waveform=waveform;
@@ -167,7 +167,7 @@ void Point_to_Point_FDD_TX::run(){
             int nb_bits=qpsk->nb_bits;
             int OF=qpsk->OF;
             Number_of_received_symbols=nb_bits*OF/2;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==6)){
             last_waveform=waveform;
@@ -175,7 +175,7 @@ void Point_to_Point_FDD_TX::run(){
             int nb_bits=cpfsk->nb_bits;
             int OF=cpfsk->OF;
             Number_of_received_symbols=nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==7)){
             last_waveform=waveform;
@@ -184,7 +184,7 @@ void Point_to_Point_FDD_TX::run(){
             int SF=dsss->SF;
             int OF=dsss->OF;
             Number_of_received_symbols=SF*nb_bits*OF;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if((last_waveform!=waveform)&&(waveform==8)){
          last_waveform=waveform;
@@ -199,7 +199,7 @@ void Point_to_Point_FDD_TX::run(){
              Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask+1)*(Nfft+Ncp);
          else
              Number_of_received_symbols=(SF*(nb_bits+1)*OF/sum_mask)*(Nfft+Ncp);
-         packet = new Packet(nb_bits);
+         packet = new CogWave_Packet(nb_bits);
 
         }
         if((last_waveform!=waveform)&&(waveform==9)){
@@ -207,7 +207,7 @@ void Point_to_Point_FDD_TX::run(){
             ofdm = new Modem_OFDM();
             int nb_bits=ofdm->nb_bits;
             Number_of_received_symbols=ofdm->Number_of_received_symbols;
-            packet = new Packet(nb_bits);
+            packet = new CogWave_Packet(nb_bits);
         }
         if(state=="SEND"){
             //cout << "########### PROCESSING TX PACKET ########### " << device->time() << " #############" << endl;
@@ -216,7 +216,7 @@ void Point_to_Point_FDD_TX::run(){
 
             time_index=(floor(device->time()/(Number_of_received_symbols/rxrate)+0.5));
             if(previous_time_index!=time_index){
-                data_packet=packet->encode_packet(myaddress,destaddress,nb_read,ptr);
+                data_packet=packet->encode_packet(myaddress,destaddress,nb_read);
                 if(nb_read>0){
                     previous_time_index=time_index;
                     if(last_waveform==1)

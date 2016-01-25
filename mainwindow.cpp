@@ -108,9 +108,6 @@ void MainWindow::on_pushButton_clicked()
 {
     if(ui->pushButton->text()=="Start Node"){
 
-        int fd_ext=tun_alloc((char*)"tun0");
-        popen("ifconfig tun0 192.168.1.1 netmask 255.255.255.0 broadcast 192.168.1.255","r");
-
         //Start Multimedia
         video_rx->start();
         audio_rx->start();
@@ -119,8 +116,8 @@ void MainWindow::on_pushButton_clicked()
         store_text2=ui->comboBox_2->currentText();
         if(store_text2=="L2:Point to Point TDD"){
             //Start Waveform TDD
-            data_link_layer_tx = new Point_to_Point_TDD_TX(ui,fd_ext);
-            data_link_layer_rx = new Point_to_Point_TDD_RX(ui,fd_ext);
+            data_link_layer_tx = new Point_to_Point_TDD_TX(ui);
+            data_link_layer_rx = new Point_to_Point_TDD_RX(ui);
             connect(data_link_layer_tx,SIGNAL(valuechanged(bool)),data_link_layer_rx,SLOT(setvalue(bool)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(bool,double)),data_link_layer_tx,SLOT(setvalue(bool,double)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(int)),data_link_layer_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
@@ -137,8 +134,8 @@ void MainWindow::on_pushButton_clicked()
         }
         if(store_text2=="L2:Point to Point FDD"){
             //Start Waveform FDD
-            data_link_layer_tx = new Point_to_Point_FDD_TX(ui,fd_ext);
-            data_link_layer_rx = new Point_to_Point_FDD_RX(ui,fd_ext);
+            data_link_layer_tx = new Point_to_Point_FDD_TX(ui);
+            data_link_layer_rx = new Point_to_Point_FDD_RX(ui);
             plot = new Plot(ui,((Point_to_Point_FDD_RX*)data_link_layer_rx)->Nfft);
             qRegisterMetaType<vec>("vec");
             qRegisterMetaType<cvec>("cvec");
@@ -151,8 +148,8 @@ void MainWindow::on_pushButton_clicked()
             #endif
         }
         if(store_text2=="L2:ALOHA"){
-            data_link_layer_tx = new ALOHA_TX(ui,fd_ext);
-            data_link_layer_rx = new ALOHA_RX(ui,fd_ext);
+            data_link_layer_tx = new ALOHA_TX(ui);
+            data_link_layer_rx = new ALOHA_RX(ui);
             connect(data_link_layer_rx,SIGNAL(valuechanged(int)),data_link_layer_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(sendack(int)),data_link_layer_tx,SLOT(triggerack(int)),Qt::BlockingQueuedConnection);
             plot = new Plot(ui,((ALOHA_RX*)data_link_layer_rx)->Nfft);
@@ -167,8 +164,8 @@ void MainWindow::on_pushButton_clicked()
 
         }
         if(store_text2=="L2:CSMA"){
-            data_link_layer_tx = new CSMA_TX(ui,fd_ext);
-            data_link_layer_rx = new CSMA_RX(ui,fd_ext);
+            data_link_layer_tx = new CSMA_TX(ui);
+            data_link_layer_rx = new CSMA_RX(ui);
             connect(data_link_layer_rx,SIGNAL(valuechanged(int)),data_link_layer_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(sendack(int)),data_link_layer_tx,SLOT(triggerack(int)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(signal_detect(bool)),data_link_layer_tx,SLOT(signal_detected(bool)),Qt::BlockingQueuedConnection);
@@ -185,8 +182,8 @@ void MainWindow::on_pushButton_clicked()
         }
         if(store_text2=="L2:TDMA TDD"){
             //Start Waveform TDD
-            data_link_layer_tx = new TDMA_TDD_TX(ui,fd_ext);
-            data_link_layer_rx = new TDMA_TDD_RX(ui,fd_ext);
+            data_link_layer_tx = new TDMA_TDD_TX(ui);
+            data_link_layer_rx = new TDMA_TDD_RX(ui);
             connect(data_link_layer_tx,SIGNAL(valuechanged(bool)),data_link_layer_rx,SLOT(setvalue(bool)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(bool,double)),data_link_layer_tx,SLOT(setvalue(bool,double)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(int)),data_link_layer_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
@@ -206,8 +203,8 @@ void MainWindow::on_pushButton_clicked()
         if(store_text2=="L2:OFDMA TDD"){
             ui->comboBox->setCurrentIndex(ui->comboBox->findText("L1:MCDAAOFDM"));
             //Start Waveform TDD
-            data_link_layer_tx = new OFDMA_TDD_TX(ui,fd_ext);
-            data_link_layer_rx = new OFDMA_TDD_RX(ui,fd_ext);
+            data_link_layer_tx = new OFDMA_TDD_TX(ui);
+            data_link_layer_rx = new OFDMA_TDD_RX(ui);
             connect(data_link_layer_tx,SIGNAL(valuechanged(bool)),data_link_layer_rx,SLOT(setvalue(bool)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(bool,double)),data_link_layer_tx,SLOT(setvalue(bool,double)),Qt::BlockingQueuedConnection);
             connect(data_link_layer_rx,SIGNAL(valuechanged(int)),data_link_layer_tx,SLOT(setvalue(int)),Qt::BlockingQueuedConnection);
@@ -731,6 +728,141 @@ void MainWindow::on_pushButton_5_clicked()
     }
 }
 
+
+
+void MainWindow::on_pushButton_6_clicked()
+{
+
+    if(store_text2=="L2:Point to Point TDD"){
+
+        if(((Point_to_Point_TDD_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending IP
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((Point_to_Point_TDD_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((Point_to_Point_TDD_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((Point_to_Point_TDD_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((Point_to_Point_TDD_TX*)data_link_layer_tx)->state="SEND";
+
+
+            }
+            else{
+                //Stop Sending IP
+                ((Point_to_Point_TDD_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+    if(store_text2=="L2:Point to Point FDD"){
+
+        if(((Point_to_Point_FDD_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending IP
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((Point_to_Point_FDD_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((Point_to_Point_FDD_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((Point_to_Point_FDD_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((Point_to_Point_FDD_TX*)data_link_layer_tx)->state="SEND";
+
+            }
+            else{
+                //Stop Sending IP
+                ((Point_to_Point_FDD_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+    if(store_text2=="L2:ALOHA"){
+
+        if(((ALOHA_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending IP
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((ALOHA_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((ALOHA_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((ALOHA_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((ALOHA_TX*)data_link_layer_tx)->state="SEND";
+
+            }
+            else{
+                //Stop Sending IP
+                ((ALOHA_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+    if(store_text2=="L2:CSMA"){
+
+        if(((CSMA_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending IP
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((CSMA_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((CSMA_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((CSMA_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((CSMA_TX*)data_link_layer_tx)->state="SEND";
+
+            }
+            else{
+                //Stop Sending IP
+                ((CSMA_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+
+
+    if(store_text2=="L2:TDMA TDD"){
+
+        if(((TDMA_TDD_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending BER
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((TDMA_TDD_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((TDMA_TDD_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((TDMA_TDD_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((TDMA_TDD_TX*)data_link_layer_tx)->state="SEND";
+
+            }
+            else{
+                //Stop Sending BER
+                ((TDMA_TDD_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+    if(store_text2=="L2:OFDMA TDD"){
+
+        if(((OFDMA_TDD_TX*)data_link_layer_tx)->noderunning==true){
+            if(ui->pushButton_6->text()=="Start IP"){
+                //Start Sending BER
+                int fd_ext=tun_alloc((char*)"tun2");
+                popen("ifconfig tun2 192.168.1.2 netmask 255.255.255.0 broadcast 192.168.1.255","r");
+                ui->pushButton_6->setText("Stop IP");
+                ((OFDMA_TDD_TX*)data_link_layer_tx)->packet->is_ip=true;
+                ((OFDMA_TDD_TX*)data_link_layer_tx)->packet->ptr=fd_ext;
+                ((OFDMA_TDD_RX*)data_link_layer_rx)->packet->ptr=fd_ext;
+                ((OFDMA_TDD_TX*)data_link_layer_tx)->state="SEND";
+
+            }
+            else{
+                //Stop Sending BER
+                ((OFDMA_TDD_TX*)data_link_layer_tx)->packet->is_ip=false;
+                ui->pushButton_6->setText("Start IP");
+            }
+        }
+    }
+}
 void MainWindow::on_lineEdit_returnPressed()
 {
 

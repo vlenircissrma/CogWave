@@ -9,7 +9,6 @@
 ///////                                 email:vincent.lenir@rma.ac.be                             ///////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "simulatordevice.h"
 
 
@@ -41,7 +40,7 @@ SimulatorDevice::SimulatorDevice()
     duplex_mode=1;
     RNG_randomize();
     rx_timestamp=0;
-    tx_timestamp2=randu();
+    tx_timestamp2=/*randu()*1.0e-4*/0;
     channel_model= new Channel_Models(rx_rate);
     awgn_noise.set_noise(1.0e-7);
     processing_delay=/*100000.0e-6*/0;
@@ -128,7 +127,7 @@ double SimulatorDevice::sendsamples(cvec tx_buff,double timestamp){
 
     tx_buff=tx_buff*tx_amplitude;
     if(time()>timestamp){
-        cout << "WRONG TX TIMESTAMP!!!!!!!!!!!!!!!! " << timestamp << " time " << time() << endl;
+        //cout << "WRONG TX TIMESTAMP!!!!!!!!!!!!!!!! " << timestamp << " time " << time() << endl;
         while(time()>timestamp){
                 timestamp=timestamp+time_gap;
         }
@@ -166,21 +165,23 @@ void SimulatorDevice::start(){
 
         }
         if(is_receiving){
+
             is_synchronized=false;
             while(!is_synchronized) 0;
             usleep(100000);
             cvec rx_buff2;
-             //while(is_receiving){
+
+            //while(is_receiving){
                  if(rx_buff_size!=rx_buff.size()){
                      rx_buff_size=rx_buff.size();
                      rx_buff2.set_size(rx_buff_size);
                      rx_buff2.zeros();
                  }
-                 timestamp=timestamp+time_gap;
+                 //timestamp=timestamp+time_gap;
                  if((previous_correction!=correction)&&(abs(previous_correction-correction)*rx_rate>0)){
                       timestamp=timestamp+correction;
                       previous_correction=correction;
-                      //cout << "CORRECTION" << endl;
+                      //cout << "CORRECTION!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 
                  }
                 if(time()>timestamp){
@@ -189,13 +190,15 @@ void SimulatorDevice::start(){
                             timestamp=timestamp+time_gap;
 
                 }
-                rx_buff2=recv(rx_buff_size,timestamp);
+
+                //cout << my_address << " : TIMESTAMP RX " << timestamp << endl;
+                rx_buff2=recv(rx_buff_size/*,timestamp*/);
                 mutex.lock();
                 rx_buff=rx_buff2;
                 mutex.unlock();
                 is_receiving=false;
+             //}
 
-            // }
 
         }
     }
@@ -204,11 +207,11 @@ void SimulatorDevice::start(){
 
         if(is_sending){
             //while(is_sending){
-                send(tx_buff);
-                if(tx_buff2!=tx_buff){
-                    tx_buff=tx_buff2;
-                }
-                has_sent=true;
+            if(tx_buff2!=tx_buff){
+                tx_buff=tx_buff2;
+            }
+            send(tx_buff);
+            has_sent=true;
             //}
             has_sent=false;
             is_sending=false;
@@ -240,7 +243,6 @@ void SimulatorDevice::start(){
                 mutex.lock();
                 rx_buff=rx_buff2;
                 mutex.unlock();
-
                 is_receiving=false;
             //}
 
@@ -274,6 +276,7 @@ void SimulatorDevice::send(cvec tx_buff, double tx_timestamp){
     //cout << "Emit vector " << tx_buff.size() << " with time " << tx_timestamp << endl;
     emit send_vector(tmp);
     //time_vector=time_vector2;
+    //timer=tx_timestamp;
     while(time()<tx_timestamp) 0;
 
 }
@@ -309,8 +312,8 @@ cvec SimulatorDevice::recv(int rx_size){
         src_address=time_vector2[i].src_address;
         tx_timestamp=time_vector2[i].vector_timestamp;
         tmp=channel_model->OTA_Transmission(time_vector2[i].vector_data,"PathLossOnly",src_address,my_address);
-        //cout << my_address << " : Tx timestamp " << tx_timestamp << " with size " << tmp.size() << " - "<<  src_address << endl;
-        //cout << "Rx timestamp " << rx_timestamp << " with size " << rx_size << endl;
+        //cout << my_address << " : Tx timestamp " << tx_timestamp << " with size " << tmp.size() << " - source address : "<<  src_address << endl;
+        //cout << my_address << " : Rx timestamp " << rx_timestamp << " with size " << rx_size << endl;
         if((floor(tx_timestamp*tx_rate+0.5)<floor(rx_timestamp*rx_rate+rx_size+0.5))&&(floor(tx_timestamp*tx_rate+0.5)+tmp.size()>floor(rx_timestamp*rx_rate+0.5)+rx_size)){
             //cout << "1" << endl;
             received_vector.set_subvector(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5),received_vector.get(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5),rx_size-1)+tmp.get(0,rx_size-(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5))-1));
@@ -340,7 +343,6 @@ cvec SimulatorDevice::recv(int rx_size){
     rx_timestamp=rx_timestamp+rx_size/rx_rate;
     timer=rx_timestamp;
     emit updated_timer(rx_timestamp+processing_delay);
-    //cout << rx_timestamp << endl;
     return received_vector;
 
 }
@@ -360,8 +362,8 @@ cvec SimulatorDevice::recv(int rx_size, double rx_timestamp){
         src_address=time_vector2[i].src_address;
         tx_timestamp=time_vector2[i].vector_timestamp;
         tmp=channel_model->OTA_Transmission(time_vector2[i].vector_data,"PathLossOnly",src_address,my_address);
-        //cout << "Tx timestamp " << tx_timestamp << " with size " << tmp.size() << endl;
-        //cout << "Rx timestamp " << rx_timestamp << " with size " << rx_size << endl;
+        //cout << my_address << " : Tx timestamp " << tx_timestamp << " with size " << tmp.size() << " - source address : "<<  src_address << endl;
+        //cout << my_address << " : Rx timestamp " << rx_timestamp << " with size " << rx_size << endl;
         if((floor(tx_timestamp*tx_rate+0.5)<floor(rx_timestamp*rx_rate+rx_size+0.5))&&(floor(tx_timestamp*tx_rate+0.5)+tmp.size()>floor(rx_timestamp*rx_rate+0.5)+rx_size)){
             //cout << "1" << endl;
             received_vector.set_subvector(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5),received_vector.get(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5),rx_size-1)+tmp.get(0,rx_size-(floor(tx_timestamp*tx_rate+0.5)-floor(rx_timestamp*rx_rate+0.5))-1));
@@ -389,9 +391,13 @@ cvec SimulatorDevice::recv(int rx_size, double rx_timestamp){
     mutex2.unlock();
     rx_md.time_spec=rx_timestamp;
     while(tx_timestamp>rx_timestamp+rx_size/rx_rate)
-        rx_timestamp=rx_timestamp+rx_size/rx_rate;
+          rx_timestamp=rx_timestamp+rx_size/rx_rate;
+    if(rx_timestamp+rx_size/rx_rate>tx_timestamp)
+        rx_timestamp=rx_timestamp-rx_size/rx_rate;
+    rx_timestamp=rx_timestamp-rx_size/rx_rate;
     timer=rx_timestamp;
-    emit updated_timer(tx_timestamp+processing_delay);
+    emit updated_timer(rx_timestamp+processing_delay);
     return received_vector;
 
 }
+

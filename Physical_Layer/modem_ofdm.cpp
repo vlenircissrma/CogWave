@@ -390,7 +390,33 @@ bool Modem_OFDM::preamble_detection(bvec received_bits,bvec &received_bits2,int 
     bool preamble_ok=false;
     int i=0;
     preamble_start=0;
-    while((i<int(received_bits.size())-144)&&(preamble_ok==false)){
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
+        if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
+            preamble_ok=true;
+            received_bits2.set_size(received_bits.size()-i);
+            received_bits2=received_bits.get(i,received_bits.size()-1);
+            preamble_start=i;
+        }
+        i++;
+    }
+
+    return preamble_ok;
+
+}
+
+bool Modem_OFDM::ack_detection(bvec received_bits,bvec &received_bits2,int &preamble_start){
+
+    vector<char> preamble(3);
+    preamble[0]='!';
+    preamble[1]='!';
+    preamble[2]='A';
+
+    bvec preamble_bits=charvec2bvec(preamble);
+
+    bool preamble_ok=false;
+    int i=0;
+    preamble_start=0;
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
         if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
             preamble_ok=true;
             received_bits2.set_size(received_bits.size()-i);

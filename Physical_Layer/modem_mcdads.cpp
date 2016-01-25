@@ -648,7 +648,7 @@ bool Modem_MCDADS::preamble_detection(bvec received_bits,bvec &received_bits2,in
     bool preamble_ok=false;
     int i=0;
     preamble_start=0;
-    while((i<int(received_bits.size())-144)&&(preamble_ok==false)){
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
         if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
             preamble_ok=true;
             preamble_start=i;
@@ -678,7 +678,7 @@ bool Modem_MCDADS::ack_detection(bvec received_bits,bvec &received_bits2,int &pr
     bool preamble_ok=false;
     int i=0;
     preamble_start=0;
-    while((i<int(received_bits.size())-144)&&(preamble_ok==false)){
+    while((i<=int(received_bits.size())-144)&&(preamble_ok==false)){
         if((preamble_bits==received_bits.get(i,i+24-1))&&(preamble_bits==received_bits.get(i+120,i+144-1))){
             preamble_ok=true;
             preamble_start=i;
