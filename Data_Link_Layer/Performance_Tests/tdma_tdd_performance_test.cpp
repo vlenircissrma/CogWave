@@ -21,7 +21,7 @@
 TDMA_TDD_Performance_Test::TDMA_TDD_Performance_Test(Ui_MainWindow *ui)
 {
 
-    number_transceivers=2;
+    number_transceivers=4;
     ivec fd_ext;
     fd_ext.set_size(number_transceivers);
     //create transceivers
@@ -98,12 +98,14 @@ TDMA_TDD_Performance_Test::TDMA_TDD_Performance_Test(Ui_MainWindow *ui)
     for(int i=0;i<number_transceivers;i++){
         transmitters[i]->packet->ptr=fd_ext[i];
         receivers[i]->packet->ptr=fd_ext[i];
-        transmitters[i]->packet->is_ber_count=true;
-        receivers[i]->packet->is_ber_count=true;
+        transmitters[i]->is_time_set=true;
+        transmitters[i]->tx_timestamp=i*transmitters[i]->time_gap/transmitters[i]->tdma_slots;
+        transmitters[i]->packet->is_ip=true;
+        receivers[i]->packet->is_ip=true;
         transmitters[i]->state="SEND";
     }
-    transmitters[1]->packet->is_ber_count=false;
-    transmitters[1]->state="NOSTATE";
+    //transmitters[1]->packet->is_ber_count=false;
+    //transmitters[1]->state="NOSTATE";
 
 }
 

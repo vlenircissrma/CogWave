@@ -20,6 +20,9 @@
 #include "Physical_Layer/modem_gmsk.h"
 #include "Physical_Layer/modem_qpsk.h"
 #include "Physical_Layer/modem_cpfsk.h"
+#include "Physical_Layer/modem_corasma/modem_corasma.h"
+#include "Physical_Layer/modem_nbwf/modem_nbwf.h"
+#include "Physical_Layer/modem_nbwf2.h"
 #include "Physical_Layer/modem_dsss.h"
 #include "Physical_Layer/modem_mcdads.h"
 #include "Physical_Layer/modem_ofdm.h"
@@ -38,6 +41,9 @@ public:
     Modem_GMSK *gmsk;
     Modem_QPSK *qpsk;
     Modem_CPFSK *cpfsk;
+    Modem_CORASMA *corasma;
+    Modem_NBWF *nbwf;
+    Modem_NBWF2 *nbwf2;
     Modem_DSSS *dsss;
     Modem_MCDADS *mcdads;
     Modem_OFDM *ofdm;
@@ -49,7 +55,9 @@ public:
     int destaddress;
     double time_gap;
     int Number_of_received_symbols;
-
+    bool is_time_set;
+    double tx_timestamp;
+    int tdma_slots;
 
 public slots:
     void update_uhd();
@@ -79,13 +87,10 @@ private:
     cvec tx_buff;
     QString number;
     int nb_read;
-    double tx_timestamp;
     bool first_tx_timestamp;
-    bool is_time_set;
     int tx_best_group;
     int waveform;
     int last_waveform;
-    int tdma_slots;
     bool all_slots_allocated;
     int index_slot;
     int ptr;
