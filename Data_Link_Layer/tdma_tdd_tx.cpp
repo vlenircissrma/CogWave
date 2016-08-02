@@ -66,18 +66,12 @@ TDMA_TDD_TX::TDMA_TDD_TX(Ui_MainWindow *ui)
         waveform=5;
     if(gui->comboBox->currentText()=="L1:CPFSK")
         waveform=6;
-    if(gui->comboBox->currentText()=="L1:CORASMA")
-        waveform=7;
-    if(gui->comboBox->currentText()=="L1:NBWF")
-        waveform=8;
     if(gui->comboBox->currentText()=="L1:DSSS")
-        waveform=9;
+        waveform=7;
     if(gui->comboBox->currentText()=="L1:MCDADS")
-        waveform=10;
+        waveform=8;
     if(gui->comboBox->currentText()=="L1:OFDM")
-        waveform=11;
-    if(gui->comboBox->currentText()=="L1:NBWF2")
-        waveform=12;
+        waveform=9;
     last_waveform=0;
     tdma_slots=4;
     all_slots_allocated=false;
@@ -235,28 +229,6 @@ void TDMA_TDD_TX::run(){
         }
         if((last_waveform!=waveform)&&(waveform==7)){
             last_waveform=waveform;
-            corasma = new Modem_CORASMA();
-            int nb_bits=corasma->nb_bits;
-            int nb_symbols=corasma->nb_symbols;
-            Number_of_received_symbols=nb_symbols;
-            time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
-            cout << "TIME GAP TX " << time_gap << endl;
-            device->time_gap=time_gap;
-            packet = new CogWave_Packet(nb_bits);
-        }
-        if((last_waveform!=waveform)&&(waveform==8)){
-            last_waveform=waveform;
-            nbwf = new Modem_NBWF();
-            int nb_bits=nbwf->nb_bits;
-            Number_of_received_symbols=nbwf->nb_symbols;
-            time_gap=tdma_slots*(Number_of_received_symbols/rxrate);
-            cout << "TIME GAP TX " << time_gap << endl;
-            device->time_gap=time_gap;
-            packet = new CogWave_Packet(nb_bits);
-
-        }
-        if((last_waveform!=waveform)&&(waveform==9)){
-            last_waveform=waveform;
             dsss = new Modem_DSSS();
             int nb_bits=dsss->nb_bits;
             int OF=dsss->OF;
@@ -268,7 +240,7 @@ void TDMA_TDD_TX::run(){
             packet = new CogWave_Packet(nb_bits);
 
         }
-        if((last_waveform!=waveform)&&(waveform==10)){
+        if((last_waveform!=waveform)&&(waveform==8)){
          last_waveform=waveform;
          mcdads = new Modem_MCDADS();
          int nb_bits=mcdads->nb_bits;
@@ -287,7 +259,7 @@ void TDMA_TDD_TX::run(){
          packet = new CogWave_Packet(nb_bits);
 
         }
-        if((last_waveform!=waveform)&&(waveform==11)){
+        if((last_waveform!=waveform)&&(waveform==9)){
             last_waveform=waveform;
             ofdm = new Modem_OFDM();
             int nb_bits=ofdm->nb_bits;
@@ -297,18 +269,6 @@ void TDMA_TDD_TX::run(){
             cout << "TIME GAP TX " << time_gap << endl;
             device->time_gap=time_gap;
             packet = new CogWave_Packet(nb_bits);
-        }
-        if((last_waveform!=waveform)&&(waveform==12)){
-            last_waveform=waveform;
-            nbwf = new Modem_NBWF();
-            int nb_bits=nbwf->nb_bits;
-            Number_of_received_symbols=nbwf->nb_symbols;
-            int number_of_slots=2;
-            time_gap=number_of_slots*(Number_of_received_symbols/rxrate);
-            cout << "TIME GAP TX " << time_gap << endl;
-            device->time_gap=time_gap;
-            packet = new CogWave_Packet(nb_bits);
-
         }
         if(state=="SEND"){
             //cout << "########### PROCESSING TX PACKET ########### " << device->time() << " #############" << endl;
@@ -332,17 +292,11 @@ void TDMA_TDD_TX::run(){
                     if(last_waveform==6)
                         tx_buff=cpfsk->modulate(data_packet);
                     if(last_waveform==7)
-                        tx_buff=corasma->modulate(data_packet);
-                    if(last_waveform==8)
-                        tx_buff=nbwf->modulate(data_packet);
-                    if(last_waveform==9)
                         tx_buff=dsss->modulate(data_packet);
-                    if(last_waveform==10)
+                    if(last_waveform==8)
                         tx_buff=mcdads->modulate(data_packet);
-                    if(last_waveform==11)
+                    if(last_waveform==9)
                         tx_buff=ofdm->modulate(data_packet);
-                    if(last_waveform==12)
-                        tx_buff=nbwf2->modulate(data_packet);
                     if(is_time_set==false){
                         tx_timestamp=(int(device->time()/time_gap)+1)*time_gap+time_gap/2;
                         is_time_set=true;
